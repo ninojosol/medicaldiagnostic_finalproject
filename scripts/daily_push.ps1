@@ -5,15 +5,16 @@
 #   1. Verify this folder is a Git repo on branch "main" with an "origin" remote
 #   2. Show git status --short
 #   3. If nothing to sync locally, exit successfully
-#   4. git pull --rebase origin main  (BEFORE staging)
-#   5. Stage with git add -A, block unsafe medical/model paths
+#   4. Stage with git add -A (respects .gitignore)
+#   5. Block unsafe medical/model paths; unstage only if blocked
 #   6. Commit with "Daily sync: YYYY-MM-DD HH:mm" (local Windows time)
-#   7. Push to origin/main and print a success summary
+#   7. git pull --rebase origin main  (AFTER the local commit)
+#   8. Push to origin/main and print a success summary
 #
 # Safety rules:
-#   - Never force-push, reset, discard, or delete local files
+#   - Never stash, force-push, reset, discard, or delete local files
 #   - On blocked paths: unstage only (git restore --staged .)
-#   - On rebase conflict: stop and tell you how to fix it manually
+#   - On rebase conflict: stop; local commit remains safe; manual fix only
 #   - Does not ask for or store GitHub passwords/tokens
 #   - Does not run git init or change remotes
 # =============================================================================
@@ -80,6 +81,15 @@ function Test-IsUnsafeStagedPath {
     if ($p -match '\.npz$') { return $true }
 
     return $false
+}
+
+function Test-RebaseInProgress {
+    # True only when Git has actually started a rebase (conflict or mid-rebase state).
+    $gitDir = (& git rev-parse --git-dir 2>$null)
+    if (-not $gitDir) { return $false }
+    $gitDir = $gitDir.Trim()
+    return (Test-Path -LiteralPath (Join-Path $gitDir 'rebase-merge')) -or
+           (Test-Path -LiteralPath (Join-Path $gitDir 'rebase-apply'))
 }
 
 # Resolve project root = parent of the scripts/ folder that contains this file
@@ -155,35 +165,7 @@ try {
     }
 
     # -------------------------------------------------------------------------
-    # 5) Pull / rebase BEFORE staging local changes
-    #    Stops immediately on failure or conflicts. Never force-pushes or resets.
-    # -------------------------------------------------------------------------
-    Write-Info "Pulling with rebase: git pull --rebase origin main"
-    & git pull --rebase origin main
-    if ($LASTEXITCODE -ne 0) {
-        Write-Err "ERROR: git pull --rebase failed or has conflicts."
-        Write-Host ""
-        Write-Warn "Resolve the conflict manually, then continue:"
-        Write-Warn "  1. Open conflicted files and fix them"
-        Write-Warn '  2. git add <resolved-files>'
-        Write-Warn "  3. git rebase --continue"
-        Write-Warn "To cancel the rebase instead: git rebase --abort"
-        Write-Host ""
-        Write-Warn "This script will NOT force-push, reset, discard, or overwrite files."
-        exit 1
-    }
-    Write-Ok "Pull/rebase succeeded."
-    Write-Host ""
-
-    # Re-check working tree after pull (still may have local uncommitted edits)
-    $statusAfterPull = & git status --porcelain
-    if ([string]::IsNullOrWhiteSpace((@($statusAfterPull) -join "`n").Trim())) {
-        Write-Ok $NothingToCommitMsg
-        exit 0
-    }
-
-    # -------------------------------------------------------------------------
-    # 6) Stage all changes (respects .gitignore)
+    # 5) Stage all changes (respects .gitignore)
     # -------------------------------------------------------------------------
     Write-Info "Staging changes: git add -A"
     & git add -A
@@ -199,7 +181,7 @@ try {
     }
 
     # -------------------------------------------------------------------------
-    # 7) Safety gate: block medical data, models, venv, and large artifacts
+    # 6) Safety gate: block medical data, models, venv, and large artifacts
     # -------------------------------------------------------------------------
     $unsafeFiles = New-Object System.Collections.Generic.List[string]
     foreach ($path in $stagedNames) {
@@ -234,7 +216,7 @@ try {
     }
 
     # -------------------------------------------------------------------------
-    # 8) Commit with automatic local-time message
+    # 7) Commit with automatic local-time message (before pull/rebase)
     # -------------------------------------------------------------------------
     # Exact format: Daily sync: YYYY-MM-DD HH:mm  (local Windows clock)
     $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm'
@@ -247,6 +229,47 @@ try {
         exit 1
     }
 
+    $commitHash = (& git rev-parse --short HEAD).Trim()
+    Write-Ok "Local commit created: $commitHash"
+    Write-Host ""
+
+    # -------------------------------------------------------------------------
+    # 8) Pull / rebase AFTER the local commit (clean working tree)
+    #    Never stash, force-push, reset, or discard files.
+    # -------------------------------------------------------------------------
+    Write-Info "Pulling with rebase: git pull --rebase origin main"
+    & git pull --rebase origin main
+    if ($LASTEXITCODE -ne 0) {
+        Write-Err "ERROR: git pull --rebase failed."
+        Write-Host ""
+        Write-Warn "Your local commit is still safe: $commitHash"
+        Write-Warn "Message: $commitMessage"
+        Write-Warn "Nothing was force-pushed, reset, or discarded."
+        Write-Host ""
+
+        if (Test-RebaseInProgress) {
+            Write-Warn "A rebase has started and has conflicts. Resolve manually:"
+            Write-Warn "  1. Open conflicted files and fix them"
+            Write-Warn '  2. git add <resolved-files>'
+            Write-Warn "  3. git rebase --continue"
+            Write-Warn "Then push: git push origin main"
+            Write-Warn "To cancel the rebase instead (keeps the pre-rebase commit history):"
+            Write-Warn "  git rebase --abort"
+        } else {
+            Write-Warn "No rebase is in progress (for example a network or remote error)."
+            Write-Warn "Fix the issue, then run:"
+            Write-Warn "  git pull --rebase origin main"
+            Write-Warn "  git push origin main"
+        }
+
+        Write-Host ""
+        Write-Warn "This script will NOT stash, force-push, reset, discard, or overwrite files."
+        exit 1
+    }
+    Write-Ok "Pull/rebase succeeded."
+    Write-Host ""
+
+    # Refresh hash in case rebase rewrote the commit onto updated origin/main
     $commitHash = (& git rev-parse --short HEAD).Trim()
 
     # -------------------------------------------------------------------------
