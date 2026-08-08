@@ -1,0 +1,21 @@
+# ---------------------------------------------------------------------------
+# Shared defaults inherited by every other config via `inherits: base.yaml`.
+# Values here are overridden by the child config, and the notebook can override
+# anything again with load_config(..., overrides={...}).
+# ---------------------------------------------------------------------------
+
+# Global random seed. Applied to Python, NumPy and PyTorch by seed_everything().
+seed: 42
+
+# true  -> ask cuDNN for deterministic kernels (slower, more repeatable)
+# false -> allow cuDNN autotuning (faster, small run-to-run variation)
+deterministic: true
+
+# auto | cuda | cpu
+device: auto
+
+train:
+  num_workers: 0        # Windows + Jupyter: keep 0. On Linux, 4 is a good start.
+  amp: true             # mixed precision; ignored on CPU
+  progress: true        # tqdm progress bars
+  grad_clip: 1.0

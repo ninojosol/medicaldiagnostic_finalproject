@@ -1,0 +1,97 @@
+# ===========================================================================
+# Chest X-ray classification - BASELINE (simple CNN trained from scratch)
+#
+# Purpose: an honest reference point. Whatever the transfer-learning model
+# scores only means something relative to this.
+#
+# EDIT `data:` TO MATCH YOUR DATASET BEFORE RUNNING NOTEBOOK 01.
+# ===========================================================================
+inherits: base.yaml
+
+run_name: xray_baseline_cnn
+
+data:
+  # --- where the images are ------------------------------------------------
+  # Path is relative to the project root.
+  root: data/raw/xray
+
+  # --- how the dataset is organised ---------------------------------------
+  # folders : <root>[/<split>]/<class_name>/*.png   (Kaggle-style)
+  # csv     : a metadata CSV lists images and labels (needed for multi-label)
+  layout: folders
+
+  # --- the classes you want the model to predict --------------------------
+  # One entry  -> binary task (that label vs the rest).
+  # Many entries -> one sigmoid output per label (multi-label).
+  # With layout: folders these MUST match the class folder names (case-insensitive).
+  labels:
+    - PNEUMONIA
+
+  # With layout: folders, what to do with images in class folders NOT listed
+  # above (e.g. NORMAL/ when labels is [PNEUMONIA]):
+  #   true  -> keep them as the NEGATIVE class. This is what makes
+  #            labels: [PNEUMONIA] mean "PNEUMONIA vs everything else".
+  #   false -> drop them entirely. Only correct when those folders are a
+  #            different task, NOT the negative class.
+  # Leaving this true is almost always what you want for a binary task.
+  unlisted_folders_as_negative: true
+
+  # --- CSV-layout settings (ignored when layout: folders) -----------------
+  # csv_path: data/raw/xray/labels.csv
+  # image_root: data/raw/xray/images     # what the CSV paths are relative to
+  # image_column: Image Index            # column holding the image path/filename
+  # patient_column: Patient ID           # column holding the patient identifier
+  # label_column: Finding Labels         # single column of class names, or...
+  # label_separator: "|"                 # ...separator-joined findings
+  # split_column: null                   # column with an official train/test split
+
+  # --- patient-level splitting --------------------------------------------
+  # Regex with ONE capturing group, applied to the file name then the full path.
+  # Leave null if the dataset has no patient IDs (each image is then treated as
+  # its own patient - state this limitation in the report).
+  # NIH ChestX-ray14 style "00000013_005.png":  '^(\d+)_'
+  patient_id_regex: null
+
+  image_size: 224
+  val_size: 0.15
+  test_size: 0.15
+  # true  -> honour the dataset's own train/test folders and carve val out of train
+  # false -> build a fresh patient-level train/val/test split
+  use_official_split: true
+
+model:
+  name: simple_cnn      # simple_cnn | densenet121 | efficientnet_b0 | efficientnet_b3 | resnet18 | resnet50
+  pretrained: false     # from scratch: this is the baseline
+  base_width: 32        # simple_cnn only; width of the first conv block
+  dropout: 0.3
+
+augmentation:
+  hflip: 0.0            # OFF: a mirrored chest X-ray is anatomically wrong
+  rotation_degrees: 7
+  translate: 0.05
+  scale: [0.92, 1.08]
+  brightness: 0.10
+  contrast: 0.10
+  random_erasing: 0.0
+
+train:
+  epochs: 15
+  batch_size: 32
+  lr: 0.001
+  weight_decay: 0.0001
+  optimizer: adamw            # adamw | adam | sgd
+  scheduler: plateau          # plateau | cosine | onecycle | none
+  scheduler_patience: 2
+  loss: weighted_bce          # weighted_bce | bce | focal
+  use_class_weights: true     # pos_weight = n_negative / n_positive (train split only)
+  monitor: val_roc_auc        # metric used for checkpointing and early stopping
+  early_stopping_patience: 5
+
+eval:
+  # f1 | youden | min_recall  -- always selected on VALIDATION data only
+  threshold_strategy: f1
+  min_recall: 0.80            # used only when threshold_strategy: min_recall
+  n_bootstrap: 1000           # 0 disables confidence intervals
+
+output:
+  root: outputs/classification

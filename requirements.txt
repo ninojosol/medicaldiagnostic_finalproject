@@ -1,0 +1,53 @@
+# AI-Assisted Medical Image Analysis - Python 3.11
+#
+# ===========================================================================
+# STEP 1 - INSTALL PYTORCH FIRST, SEPARATELY FROM THIS FILE
+# ===========================================================================
+# torch and torchvision are deliberately NOT listed below. The correct wheel
+# depends on your GPU, and listing them here would make `pip install -r
+# requirements.txt` silently replace a CUDA build with the CPU build from PyPI.
+#
+#   NVIDIA GPU - CUDA 12.8 wheels
+#   (required for RTX 50-series / Blackwell; also fine for RTX 30/40-series):
+#     pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+#
+#   CPU only:
+#     pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+#
+# ===========================================================================
+# STEP 2 - then install everything else
+# ===========================================================================
+#     pip install -r requirements.txt
+#
+# Minimum versions the code relies on: torch >= 2.7, torchvision >= 0.22
+# (torchvision.transforms.v2 with tv_tensors, and torch.amp.GradScaler).
+#
+# Verify the result with notebook 00_environment_check.ipynb - it prints the
+# torch build and whether CUDA is actually available.
+
+# --- numerical / data ------------------------------------------------------
+numpy>=1.26,<3
+pandas>=2.1
+scipy>=1.11
+
+# --- imaging ---------------------------------------------------------------
+Pillow>=10.2
+opencv-python>=4.9          # optional; used for fast image ops, not required
+scikit-image>=0.22          # optional; handy for mask post-processing
+
+# --- metrics ---------------------------------------------------------------
+scikit-learn>=1.4
+
+# --- plotting --------------------------------------------------------------
+matplotlib>=3.8
+seaborn>=0.13
+
+# --- configuration & utilities ---------------------------------------------
+PyYAML>=6.0
+tqdm>=4.66
+
+# --- notebooks -------------------------------------------------------------
+jupyterlab>=4.1
+notebook>=7.1
+ipykernel>=6.29
+ipywidgets>=8.1             # progress bars render properly in JupyterLab

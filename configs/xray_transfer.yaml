@@ -1,0 +1,66 @@
+# ===========================================================================
+# Chest X-ray classification - TRANSFER LEARNING (pretrained DenseNet-121)
+#
+# Keep `data:` IDENTICAL to xray_baseline.yaml so the comparison between the two
+# models is fair - same images, same split, same labels. Only the model and the
+# optimisation settings differ.
+#
+# First run downloads ImageNet weights (~30 MB) and needs internet.
+# ===========================================================================
+inherits: base.yaml
+
+run_name: xray_densenet121
+
+data:
+  root: data/raw/xray
+  layout: folders
+  labels:
+    - PNEUMONIA
+  unlisted_folders_as_negative: true   # NORMAL/ becomes the negative class
+  patient_id_regex: null
+  image_size: 224
+  val_size: 0.15
+  test_size: 0.15
+  use_official_split: true
+
+model:
+  name: densenet121       # try efficientnet_b0 as a second transfer model
+  pretrained: true        # ImageNet weights
+  freeze_backbone: false  # true = train the head only (faster, weaker)
+  dropout: 0.2
+
+augmentation:
+  hflip: 0.0
+  rotation_degrees: 7
+  translate: 0.05
+  scale: [0.92, 1.08]
+  brightness: 0.10
+  contrast: 0.10
+  random_erasing: 0.0
+
+train:
+  epochs: 15
+  batch_size: 32          # lower to 16 if you hit CUDA out-of-memory
+  lr: 0.0001              # smaller than the baseline: fine-tuning, not learning from zero
+  weight_decay: 0.0001
+  optimizer: adamw
+  scheduler: plateau
+  scheduler_patience: 2
+  loss: weighted_bce
+  use_class_weights: true
+  monitor: val_roc_auc
+  early_stopping_patience: 5
+
+eval:
+  threshold_strategy: f1
+  min_recall: 0.80
+  n_bootstrap: 1000
+
+gradcam:
+  # Which label's Grad-CAM to visualise (index into data.labels).
+  class_index: 0
+  examples_per_group: 2   # TP / TN / FP / FN examples per panel
+  alpha: 0.4              # heat-map opacity
+
+output:
+  root: outputs/classification

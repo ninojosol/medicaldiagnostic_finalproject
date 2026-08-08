@@ -1,0 +1,77 @@
+# ===========================================================================
+# Brain MRI tumour segmentation - U-Net
+#
+# EDIT `data:` TO MATCH YOUR DATASET BEFORE RUNNING NOTEBOOK 04.
+# ===========================================================================
+inherits: base.yaml
+
+run_name: mri_unet
+
+data:
+  root: data/raw/mri
+
+  # suffix   : images and masks share a folder, masks end with `mask_suffix`
+  #            e.g. TCGA_CS_4941_19960909_1.tif  +  ..._1_mask.tif   (LGG dataset)
+  # parallel : mirrored images/ and masks/ trees
+  layout: suffix
+  mask_suffix: "_mask"
+
+  # --- parallel-layout settings (ignored when layout: suffix) -------------
+  # image_dir: data/raw/mri/images
+  # mask_dir:  data/raw/mri/masks
+
+  # Patient ID: with layout `suffix` the first sub-folder under root is used
+  # automatically (that is how the LGG dataset is organised). Set a regex with
+  # ONE capturing group to override, e.g. '(TCGA_[A-Z]{2}_\d+)'.
+  patient_id_regex: null
+
+  image_size: 256
+  val_size: 0.15
+  test_size: 0.15
+  stratify_on_tumour: true    # balance tumour-positive patients across splits
+  normalize_per_image: false  # per-slice z-scoring; try true if scanners differ
+
+model:
+  name: unet                  # unet | resnet_unet (ImageNet-pretrained encoder)
+  in_channels: 3              # 3 for RGB/multi-sequence TIFFs, 1 for grayscale
+  out_channels: 1             # binary tumour vs background
+  features: [64, 128, 256, 512]   # halve these if CUDA runs out of memory
+  dropout: 0.0
+  pretrained: true            # resnet_unet only
+
+augmentation:
+  hflip: 0.5                  # acceptable here: the brain is broadly symmetric
+  vflip: 0.0
+  rotation_degrees: 15
+  translate: 0.05
+  scale: [0.9, 1.1]
+  brightness: 0.15
+  contrast: 0.15
+
+train:
+  epochs: 30
+  batch_size: 16              # lower to 8 or 4 if you hit CUDA out-of-memory
+  lr: 0.001
+  weight_decay: 0.00001
+  optimizer: adamw
+  scheduler: plateau
+  scheduler_patience: 3
+  loss: dice_bce              # dice_bce | dice | bce | tversky
+  bce_weight: 0.5
+  dice_weight: 0.5
+  dice_smooth: 1.0
+  use_pos_weight: false       # extra BCE weighting; Dice usually covers the imbalance
+  # tversky_alpha: 0.3        # tversky only: lower alpha / higher beta punishes missed tumour
+  # tversky_beta: 0.7
+  early_stopping_patience: 8
+
+eval:
+  threshold: 0.5
+  tune_threshold: true        # sweep the threshold on VALIDATION, then freeze it
+  n_bootstrap: 1000
+  n_example_overlays: 6       # best + worst cases shown side by side
+  save_predicted_masks: true
+  max_saved_masks: 50
+
+output:
+  root: outputs/segmentation
