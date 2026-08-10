@@ -250,7 +250,7 @@ try {
         if (Test-RebaseInProgress) {
             Write-Warn "A rebase has started and has conflicts. Resolve manually:"
             Write-Warn "  1. Open conflicted files and fix them"
-            Write-Warn '  2. git add <resolved-files>'
+            Write-Warn "  2. git add <resolved-files>"
             Write-Warn "  3. git rebase --continue"
             Write-Warn "Then push: git push origin main"
             Write-Warn "To cancel the rebase instead (keeps the pre-rebase commit history):"

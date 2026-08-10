@@ -42,6 +42,9 @@ data/processed/**
 data/interim/
 data/external/
 
+# Course download cache (original Coursera archives). Keep local; never commit.
+data_dl/
+
 # --- medical image formats, anywhere in the tree ---------------------------
 *.dcm
 *.nii
@@ -89,3 +92,11 @@ Thumbs.db
 
 # --- logs ------------------------------------------------------------------
 *.log
+
+# --- TensorFlow / Keras baseline artefacts (large or regenerable) -----------
+# Keep report-worthy classification/segmentation notebooks outputs elsewhere
+# tracked via the older !outputs/**/metrics|figures rules when applicable;
+# these three trees are intentionally ignored for the TF baseline notebook.
+outputs/models/
+outputs/metrics/
+outputs/figures/
