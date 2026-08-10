@@ -28,13 +28,11 @@ PIPELINE_STAGES = (
     ("03", "Inference Demo"),
 )
 
-PREP_ACTIVITIES = (
-    "01. Task & Data Source",
-    "02. Data Quality Audit",
-    "03. Exploratory Review",
-    "04. Cleaning & Validation",
-    "05. Leakage-Safe Split",
-    "06. Standardized Preprocessing",
+PREP_TABS = (
+    "Task & Dataset",
+    "Quality & Exploratory Review",
+    "Patient-Safe Split",
+    "Standardized Preprocessing",
 )
 
 TRAIN_ACTIVITIES = (
@@ -71,10 +69,6 @@ def load_approved_model() -> Any:
 def _init_state() -> None:
     if "active_stage" not in st.session_state:
         st.session_state.active_stage = PIPELINE_STAGES[0][1]
-    if "prep_activity" not in st.session_state:
-        st.session_state.prep_activity = PREP_ACTIVITIES[0]
-    if "prep_activity_pills" not in st.session_state:
-        st.session_state.prep_activity_pills = PREP_ACTIVITIES[0]
     if "train_activity" not in st.session_state:
         st.session_state.train_activity = TRAIN_ACTIVITIES[0]
     if "train_activity_pills" not in st.session_state:
@@ -178,336 +172,268 @@ def _process_pipeline(steps: list[str]) -> str:
     return f'<div class="cxr-pipeline">{"".join(parts)}</div>'
 
 
-def _prep_activity_content(activity: str) -> tuple[str, str, str]:
-    """Return (shared_principle, xray_card_html, mri_card_html)."""
-    if activity == PREP_ACTIVITIES[0]:
-        principle = (
-            "Both tracks convert validated medical images into structured AI outputs. "
-            "The learning target differs: disease probabilities for classification and "
-            "spatial masks for segmentation."
-        )
-        xray = _track_card(
-            "Track A",
-            "Chest X-ray Classification",
-            [
-                ("Task", "Multi-label chest X-ray classification"),
-                ("Input", "Chest X-ray image"),
-                ("Output", "Probabilities across 14 disease findings"),
-                ("Dataset scope", "1,422 X-ray images"),
-                ("Training purpose", "Academic AI engineering research prototype"),
-            ],
-            accent="accent",
-            badges=[("Classification", "ok")],
-        )
-        mri = _track_card(
-            "Track B",
-            "MRI Segmentation",
-            [
-                ("Task", "MRI tumor segmentation"),
-                ("Input", "MRI volume"),
-                ("Output", "Pixel/voxel-level predicted segmentation mask"),
-                ("Dataset scope", "To be confirmed during pipeline implementation"),
-                ("Training purpose", "Academic AI engineering research prototype"),
-                (
-                    "Status",
-                    '<span class="cxr-badge cxr-badge--planned">Pipeline planned</span>',
-                ),
-            ],
-            accent="muted",
-            badges=[("Segmentation", "planned")],
-        )
-        return principle, xray, mri
-
-    if activity == PREP_ACTIVITIES[1]:
-        principle = (
-            "Training data must be traceable, structurally valid, and correctly "
-            "paired with its learning target."
-        )
-        xray = _track_card(
-            "Track A",
-            "Chest X-ray Classification",
-            [],
-            accent="accent",
-            badges=[("Classification", "ok")],
-            extra_html=_checklist(
-                [
-                    "Image–label matching",
-                    "Image readability and supported-file validation",
-                    "Patient identifier availability for safe splitting",
-                    "Duplicate-record review",
-                ]
-            ),
-        )
-        mri = _track_card(
-            "Track B",
-            "MRI Segmentation",
-            [
-                (
-                    "Status",
-                    "Validation rules defined; execution pending",
-                ),
-            ],
-            accent="muted",
-            badges=[("Segmentation", "planned")],
-            extra_html=_checklist(
-                [
-                    "MRI volume–mask pairing",
-                    "Volume/mask dimensional consistency",
-                    "Orientation consistency checks",
-                    "Missing or invalid mask review",
-                ]
-            ),
-        )
-        return principle, xray, mri
-
-    if activity == PREP_ACTIVITIES[2]:
-        principle = (
-            "Exploration identifies imbalance, representation issues, and whether "
-            "the learning target is suitable before model development."
-        )
-        xray_extra = (
-            _checklist(
-                [
-                    "Representative X-ray image review",
-                    "Multi-label finding distribution",
-                    "Class-imbalance assessment",
-                ]
-            )
-            + '<p class="cxr-card__body" style="margin-top:0.85rem;">'
-            "Disease findings occur at different frequencies. This imbalance informs "
-            "the use of weighted binary cross-entropy and AUROC-based evaluation."
-            "</p>"
-            + _placeholder_panel(
-                "Chart placeholder",
-                "Label-distribution chart generated from verified notebook output — to be connected",
-            )
-        )
-        mri_extra = (
-            _checklist(
-                [
-                    "Representative MRI volume and mask-overlay review",
-                    "Foreground/background coverage assessment",
-                    "Tumor-size variation review",
-                ]
-            )
-            + _placeholder_panel(
-                "Example placeholder",
-                "MRI image-and-mask examples will be connected after dataset preparation",
-            )
-        )
-        xray = _track_card(
-            "Track A",
-            "Chest X-ray Classification",
-            [],
-            accent="accent",
-            badges=[("Classification", "ok")],
-            extra_html=xray_extra,
-        )
-        mri = _track_card(
-            "Track B",
-            "MRI Segmentation",
-            [],
-            accent="muted",
-            badges=[("Segmentation", "planned")],
-            extra_html=mri_extra,
-        )
-        return principle, xray, mri
-
-    if activity == PREP_ACTIVITIES[3]:
-        principle = (
-            "Only records that meet defined validation rules proceed to model development."
-        )
-        xray = _track_card(
-            "Track A",
-            "Chest X-ray Classification",
-            [],
-            accent="accent",
-            badges=[("Classification", "ok")],
-            extra_html=_checklist(
-                [
-                    "Confirm supported image format and readable image data",
-                    "Validate 14-label vector structure",
-                    "Confirm PatientId availability",
-                    "Preserve source-to-label traceability",
-                ]
-            )
-            + '<p class="cxr-card__body" style="margin-top:0.75rem;">'
-            "Resizing and DenseNet transforms belong to preprocessing, not cleaning."
-            "</p>",
-        )
-        mri = _track_card(
-            "Track B",
-            "MRI Segmentation",
-            [
-                (
-                    "Status",
-                    '<span class="cxr-badge cxr-badge--planned">Validation workflow planned</span>',
-                ),
-            ],
-            accent="muted",
-            badges=[("Segmentation", "planned")],
-            extra_html=_checklist(
-                [
-                    "Confirm readable MRI volume",
-                    "Confirm corresponding mask exists",
-                    "Validate image-mask dimensions",
-                    "Preserve patient-level traceability",
-                ]
-            ),
-        )
-        return principle, xray, mri
-
-    if activity == PREP_ACTIVITIES[4]:
-        principle = (
-            "Patient-level separation prevents the model from learning from the same "
-            "patient in both training and validation data."
-        )
-        split_visual = """
-        <div class="cxr-split">
-          <div class="cxr-split__seg cxr-split__seg--train">
-            <span class="cxr-split__label">Train</span>
-            <span class="cxr-split__value">948 images · 744 patients</span>
-          </div>
-          <div class="cxr-split__seg cxr-split__seg--val">
-            <span class="cxr-split__label">Validation</span>
-            <span class="cxr-split__value">252 images · 186 patients</span>
-          </div>
-          <div class="cxr-split__seg cxr-split__seg--test">
-            <span class="cxr-split__label">Official test</span>
-            <span class="cxr-split__value">Untouched</span>
-          </div>
-        </div>
-        <div class="cxr-note">
-          The original course validation split contained patient overlap.
-          A new GroupShuffleSplit using PatientId was created before model development.
-        </div>
-        """
-        xray = (
-            '<div class="cxr-emphasis">'
-            + _track_card(
-                "Track A · Leakage control",
-                "Chest X-ray Classification",
-                [
-                    ("Method", "GroupShuffleSplit using PatientId"),
-                    ("Training split", "948 images / 744 patients"),
-                    ("Validation split", "252 images / 186 patients"),
-                    ("Verification", "Zero patient overlap between training and validation"),
-                    ("Official test set", "Untouched until final model selection"),
-                ],
-                accent="accent",
-                badges=[("Classification", "ok")],
-                extra_html=split_visual,
-            )
-            + "</div>"
-        )
-        mri = _track_card(
-            "Track B",
-            "MRI Segmentation",
-            [
-                ("Method", "Patient-level train/validation split"),
-                ("Principle", "No patient appears in more than one development split"),
-                ("Official test set", "Reserved for final evaluation"),
-                (
-                    "Status",
-                    "Split will be created after MRI dataset preparation",
-                ),
-            ],
-            accent="muted",
-            badges=[("Segmentation", "planned")],
-        )
-        return principle, xray, mri
-
-    # PREP_ACTIVITIES[5] — Standardized Preprocessing
-    principle = (
-        "The exact same approved preprocessing must be applied during training, "
-        "validation, test evaluation, and future inference."
+def _data_table(
+    headers: list[str],
+    rows: list[list[str]],
+    numeric_cols: set[int] | None = None,
+    total_row: bool = False,
+) -> str:
+    """Plain academic data table. Values are passed in literally — nothing computed."""
+    numeric = numeric_cols or set()
+    head = "".join(
+        f'<th class="cxr-num">{h}</th>' if i in numeric else f"<th>{h}</th>"
+        for i, h in enumerate(headers)
     )
-    xray = _track_card(
-        "Track A",
-        "Chest X-ray Classification",
+    body: list[str] = []
+    for row_index, row in enumerate(rows):
+        is_total = total_row and row_index == len(rows) - 1
+        row_class = ' class="cxr-table__total"' if is_total else ""
+        cells = "".join(
+            f'<td class="cxr-num">{c}</td>' if i in numeric else f"<td>{c}</td>"
+            for i, c in enumerate(row)
+        )
+        body.append(f"<tr{row_class}>{cells}</tr>")
+    return (
+        '<div class="cxr-table-wrap"><table class="cxr-table">'
+        f"<thead><tr>{head}</tr></thead>"
+        f'<tbody>{"".join(body)}</tbody>'
+        "</table></div>"
+    )
+
+
+def _confirmations(items: list[tuple[str, str]]) -> str:
+    cells = "".join(
+        f'<div class="cxr-confirm"><span class="cxr-confirm__mark" aria-hidden="true"></span>'
+        f'<span class="cxr-confirm__text"><span class="cxr-confirm__k">{key}</span>'
+        f'<span class="cxr-confirm__v">{value}</span></span></div>'
+        for key, value in items
+    )
+    return f'<div class="cxr-confirm-grid">{cells}</div>'
+
+
+def _microcopy(text: str) -> str:
+    return f'<p class="cxr-microcopy">{text}</p>'
+
+
+def _prep_task_and_dataset() -> None:
+    """01 · Task & Dataset — scope, target, and verified dataset totals."""
+    overview = _track_card(
+        "Study definition",
+        "Chest X-ray Classification Task",
         [
+            ("Task", "Multi-label chest X-ray classification"),
+            ("Input", "Non-identifiable frontal chest X-ray image"),
+            ("Output target", "14 binary disease-finding labels per image"),
+            ("Dataset role", "Academic AI engineering demonstration only"),
             (
-                "Consistency",
-                "Training, validation, test, and inference use the same preprocessing specification",
+                "Clinical restriction",
+                "Not a diagnosis, treatment recommendation, or patient-care system",
             ),
         ],
         accent="accent",
-        badges=[("Classification", "ok")],
-        extra_html=_process_pipeline(
-            [
-                "Validate image",
-                "Convert grayscale image to 3 channels",
-                "Resize to 320 × 320",
-                "Apply DenseNet preprocessing",
-                "Model-ready tensor",
-            ]
-        ),
     )
-    mri = _track_card(
-        "Track B",
-        "MRI Segmentation",
+
+    totals = _data_table(
+        ["Dataset scope", "Verified value"],
         [
-            ("Alignment", "The mask remains spatially aligned with the MRI volume"),
-            (
-                "Status",
-                "Preprocessing design planned; parameters will be finalized after dataset inspection.",
-            ),
+            ["Total images", "1,422"],
+            ["Total patients", "1,319"],
+            ["Labels per image", "14 binary findings"],
+            ["Official test set", "Protected and untouched"],
         ],
-        accent="muted",
-        badges=[("Segmentation", "planned")],
-        extra_html=_process_pipeline(
+        numeric_cols={1},
+    )
+    totals_card = (
+        '<div class="cxr-card cxr-card--accent">'
+        '<p class="cxr-card__label">Verified totals</p>'
+        '<p class="cxr-card__title">Dataset Scope</p>'
+        f"{totals}"
+        + _microcopy(
+            "Counts reflect unique images after correcting duplicated records in "
+            "the original course development files."
+        )
+        + "</div>"
+    )
+
+    left, right = st.columns(2, gap="medium")
+    with left:
+        st.markdown(overview, unsafe_allow_html=True)
+    with right:
+        st.markdown(totals_card, unsafe_allow_html=True)
+
+
+def _prep_quality_review() -> None:
+    """02 · Quality & Exploratory Review — evidence-based audit statements only."""
+    structure_card = _track_card(
+        "Audit evidence",
+        "Metadata Structure and Duplicate Review",
+        [],
+        accent="accent",
+        extra_html=_checklist(
             [
-                "Validate MRI volume and mask",
-                "Standardize orientation",
-                "Prepare intensity values",
-                "Resize or prepare patches/volume",
-                "Model-ready image and mask tensors",
+                "Course X-ray metadata includes Image, PatientId, and 14 binary "
+                "finding columns.",
+                "The raw course training and validation metadata contained 198 "
+                "duplicated image records across files.",
+                "The repeated records were exact copies with no conflicting labels.",
+                "Duplicates were removed before the final development split.",
             ]
         ),
     )
-    return principle, xray, mri
+
+    balance_card = _track_card(
+        "Audit evidence",
+        "Class Balance Review",
+        [],
+        accent="muted",
+        extra_html=_checklist(
+            [
+                "Class prevalence is imbalanced; rare findings must be interpreted "
+                "carefully.",
+                "Every one of the 14 findings retains at least one positive example "
+                "in the validation set.",
+            ]
+        )
+        + '<div class="cxr-note">'
+        "Data quality checks are necessary to prevent duplicate weighting, patient "
+        "leakage, and misleading validation evidence."
+        "</div>",
+    )
+
+    left, right = st.columns(2, gap="medium")
+    with left:
+        st.markdown(structure_card, unsafe_allow_html=True)
+    with right:
+        st.markdown(balance_card, unsafe_allow_html=True)
 
 
-def render_prep_activity_stepper() -> str:
-    """Compact six-activity preparation stepper (distinct from major pipeline tabs)."""
+def _prep_patient_safe_split() -> None:
+    """03 · Patient-Safe Split — the leakage-control centrepiece of this stage."""
+    split_table = _data_table(
+        ["Split", "Unique images", "Unique patients", "Purpose"],
+        [
+            ["Training", "795", "744", "Model learning"],
+            ["Validation", "207", "186", "Model selection and tuning"],
+            ["Official test", "420", "389", "Final one-time evaluation"],
+            ["Total", "1,422", "1,319", "Complete dataset scope"],
+        ],
+        numeric_cols={1, 2},
+        total_row=True,
+    )
+
+    confirmations = _confirmations(
+        [
+            ("Image overlap", "0 across train, validation, and test"),
+            ("Patient overlap", "0 across train, validation, and test"),
+            (
+                "Official test set",
+                "Untouched until one final model is selected",
+            ),
+        ]
+    )
+
+    flow = _process_pipeline(
+        [
+            "Course development metadata",
+            "Verify exact duplicate records",
+            "Deduplicate by Image",
+            "Split by PatientId",
+            "Validate split isolation",
+            "Freeze protected test set",
+        ]
+    )
+
     st.markdown(
-        '<p class="cxr-prep-label">Governed preparation workflow</p>',
+        '<div class="cxr-emphasis">'
+        '<div class="cxr-card cxr-card--accent">'
+        '<p class="cxr-card__label">Leakage control</p>'
+        '<p class="cxr-card__title">Patient-Safe Development Split</p>'
+        '<p class="cxr-card__body">'
+        "The original course development files contained 198 duplicated image "
+        "records, including images repeated between the supplied training and "
+        "validation files. We removed duplicate images before splitting by "
+        "PatientId."
+        "</p>"
+        f"{split_table}"
+        f"{confirmations}"
+        '<p class="cxr-flow-label">Preparation sequence</p>'
+        f"{flow}"
+        '<div class="cxr-note">'
+        "Development data was split using <code>GroupShuffleSplit</code> with "
+        "<code>PatientId</code> as the grouping variable "
+        "(<code>test_size=0.20</code>, <code>random_state=42</code>)."
+        "</div>"
+        "</div>"
+        "</div>",
         unsafe_allow_html=True,
     )
-    st.markdown('<div class="cxr-prep-stepper-marker"></div>', unsafe_allow_html=True)
 
-    selected = st.pills(
-        "Preparation activity",
-        options=list(PREP_ACTIVITIES),
-        selection_mode="single",
-        key="prep_activity_pills",
-        label_visibility="collapsed",
+
+def _prep_standardized_preprocessing() -> None:
+    """04 · Standardized Preprocessing — specification, not a finalized decision."""
+    flow = _process_pipeline(
+        [
+            "Validate image",
+            "Convert grayscale image to 3 channels",
+            "Resize to 320 × 320",
+            "Apply DenseNet preprocessing",
+            "Send to model",
+        ]
     )
-    if selected is None:
-        selected = PREP_ACTIVITIES[0]
-        st.session_state.prep_activity_pills = selected
-        st.rerun()
-    st.session_state.prep_activity = selected
-    return selected
 
+    st.markdown(
+        '<div class="cxr-card cxr-card--accent">'
+        '<p class="cxr-card__label">Model-ready specification</p>'
+        '<p class="cxr-card__title">Standardized Preprocessing Path</p>'
+        f"{flow}"
+        '<p class="cxr-card__body">'
+        "The approved preprocessing specification must match training, validation, "
+        "official test evaluation, and future inference."
+        "</p>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
 
-def render_readiness_gate() -> None:
     st.markdown(
         """
-        <div class="cxr-gate">
-          <p class="cxr-gate__eyebrow">Preparation gate</p>
-          <h3 class="cxr-gate__title">Readiness Gate Before Model Development</h3>
-          <ul class="cxr-gate__list">
-            <li>Data and target pairing validated</li>
-            <li>Data quality and imbalance reviewed</li>
-            <li>Patient leakage prevented</li>
-            <li>Preprocessing defined consistently</li>
-            <li>Official test data protected</li>
+        <div class="cxr-status-board">
+          <p class="cxr-status-board__label">Preprocessing governance</p>
+          <p class="cxr-status-board__title">Consistency Requirements</p>
+          <div class="cxr-status-row">
+            <span class="cxr-status-row__k">Preprocessing version</span>
+            <span class="cxr-status-row__v">To be frozen after validation-based model selection</span>
+          </div>
+          <div class="cxr-status-row">
+            <span class="cxr-status-row__k">Training/validation consistency</span>
+            <span class="cxr-status-row__v">Required</span>
+          </div>
+          <div class="cxr-status-row">
+            <span class="cxr-status-row__k">Official test consistency</span>
+            <span class="cxr-status-row__v">Required</span>
+          </div>
+          <div class="cxr-status-row">
+            <span class="cxr-status-row__k">Future inference consistency</span>
+            <span class="cxr-status-row__v">Required</span>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_prep_governance_panel() -> None:
+    """Full-width panel shared by all four preparation tabs."""
+    st.markdown(
+        """
+        <div class="cxr-govpanel">
+          <p class="cxr-govpanel__eyebrow">Shared standard</p>
+          <h3 class="cxr-govpanel__title">Data Governance and Reproducibility</h3>
+          <ul class="cxr-govpanel__list">
+            <li>Only approved, non-identifiable academic data may be used.</li>
+            <li>Duplicate checks and patient-level isolation protect evaluation validity.</li>
+            <li>Validation data supports model selection; the official test set remains protected.</li>
+            <li>Final preprocessing and model versions must be documented before inference is connected.</li>
           </ul>
-          <p class="cxr-gate__closing">
-            Only after these conditions are satisfied does the project proceed to
-            training and validation.
-          </p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -515,22 +441,24 @@ def render_readiness_gate() -> None:
 
 
 def render_data_preparation() -> None:
-    activity = render_prep_activity_stepper()
-    principle, xray_html, mri_html = _prep_activity_content(activity)
-
     st.markdown(
-        f'<p class="cxr-principle"><span class="cxr-principle__label">Shared principle</span>'
-        f"{principle}</p>",
+        '<p class="cxr-prep-label">Governed preparation workflow</p>',
         unsafe_allow_html=True,
     )
+    st.markdown('<div class="cxr-prep-tabs-marker"></div>', unsafe_allow_html=True)
 
-    col_xray, col_mri = st.columns(2, gap="medium")
-    with col_xray:
-        st.markdown(xray_html, unsafe_allow_html=True)
-    with col_mri:
-        st.markdown(mri_html, unsafe_allow_html=True)
+    tab_task, tab_quality, tab_split, tab_preprocess = st.tabs(list(PREP_TABS))
 
-    render_readiness_gate()
+    with tab_task:
+        _prep_task_and_dataset()
+    with tab_quality:
+        _prep_quality_review()
+    with tab_split:
+        _prep_patient_safe_split()
+    with tab_preprocess:
+        _prep_standardized_preprocessing()
+
+    render_prep_governance_panel()
 
 
 def _metric_cards(metrics: list[tuple[str, str]]) -> str:

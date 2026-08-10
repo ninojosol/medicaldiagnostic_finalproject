@@ -982,3 +982,213 @@ div[data-testid="stTabs"] button[data-baseweb="tab"] p,
 div[data-testid="stTabs"] button[data-baseweb="tab"] span {
   font-size: 0.95rem !important;
 }
+
+/* Inner tab labels must never truncate or clip */
+div[data-testid="stTabs"] div[data-baseweb="tab-list"] {
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+div[data-testid="stTabs"] button[data-baseweb="tab"] {
+  white-space: nowrap !important;
+}
+
+div[data-testid="stTabs"] button[data-baseweb="tab"] p {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+}
+
+/* ---------- Data Preparation: tables, confirmations, governance ---------- */
+
+.cxr-prep-tabs-marker {
+  display: none;
+}
+
+.cxr-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin: 0.35rem 0 0.2rem;
+}
+
+.cxr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.cxr-table th {
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--border-strong);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.cxr-table td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--surface-muted);
+  color: var(--text);
+  font-weight: 550;
+}
+
+.cxr-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.cxr-table th.cxr-num,
+.cxr-table td.cxr-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.cxr-table td.cxr-num {
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.cxr-table__total td {
+  border-top: 1px solid var(--border-strong);
+  background: var(--surface-muted);
+  font-weight: 700;
+  color: var(--navy);
+}
+
+/* Integrity confirmations */
+
+.cxr-confirm-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin: 1rem 0 0.35rem;
+}
+
+.cxr-confirm {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.7rem 0.8rem;
+  background: var(--teal-soft);
+  border: 1px solid var(--teal-border);
+  border-radius: var(--radius-sm);
+}
+
+.cxr-confirm__mark {
+  flex: 0 0 auto;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-top: 0.15rem;
+  border: 1.5px solid var(--teal);
+  border-radius: 2px;
+  background: var(--surface);
+}
+
+.cxr-confirm__text {
+  display: block;
+}
+
+.cxr-confirm__k {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 0.15rem;
+}
+
+.cxr-confirm__v {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1.4;
+}
+
+/* Small supporting note under a table */
+
+.cxr-microcopy {
+  margin: 0.75rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.cxr-flow-label {
+  margin: 1.1rem 0 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.cxr-note code {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.05rem 0.3rem;
+  font-size: 0.84em;
+  color: var(--navy);
+  font-family: "Consolas", "Menlo", monospace;
+}
+
+/* Shared governance panel below the preparation tabs */
+
+.cxr-govpanel {
+  margin-top: 1.35rem;
+  padding: 1.15rem 1.3rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--teal);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.cxr-govpanel__eyebrow {
+  margin: 0 0 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.cxr-govpanel__title {
+  margin: 0 0 0.7rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--navy) !important;
+}
+
+.cxr-govpanel__list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.15rem 1.6rem;
+  margin: 0;
+  padding: 0 0 0 1.1rem;
+  color: var(--text-secondary);
+  font-size: 0.89rem;
+  line-height: 1.5;
+}
+
+.cxr-govpanel__list li {
+  margin: 0.18rem 0;
+}
+
+@media (max-width: 1000px) {
+  .cxr-confirm-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cxr-govpanel__list {
+    grid-template-columns: 1fr;
+  }
+}
