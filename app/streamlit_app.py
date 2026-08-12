@@ -79,11 +79,8 @@ def render_header() -> None:
     st.markdown(
         """
         <div class="cxr-header">
-          <p class="cxr-header__eyebrow">Medical Image Analysis · Final Project</p>
-          <h1 class="cxr-header__title">Medical Imaging AI Research Console</h1>
-          <p class="cxr-header__subtitle">
-            Academic decision-support prototype · Not for clinical diagnosis or treatment
-          </p>
+          <span class="cxr-header__title">Medical Imaging AI Research Console</span>
+          <span class="cxr-header__subtitle">Academic decision-support prototype · Not for clinical diagnosis or treatment</span>
         </div>
         """,
         unsafe_allow_html=True,
@@ -441,24 +438,98 @@ def render_prep_governance_panel() -> None:
 
 
 def render_data_preparation() -> None:
-    st.markdown(
-        '<p class="cxr-prep-label">Governed preparation workflow</p>',
-        unsafe_allow_html=True,
-    )
+    st.markdown('<div class="cxr-prep-workspace">', unsafe_allow_html=True)
     st.markdown('<div class="cxr-prep-tabs-marker"></div>', unsafe_allow_html=True)
 
-    tab_task, tab_quality, tab_split, tab_preprocess = st.tabs(list(PREP_TABS))
+    if "data_prep_activity" not in st.session_state:
+        st.session_state["data_prep_activity"] = "Task & Dataset"
 
-    with tab_task:
+    selected = st.session_state["data_prep_activity"]
+
+    col1, col2, col3, col4 = st.columns(4, gap="small")
+    with col1:
+        if st.button(
+            "01. Task & Dataset",
+            key="dp_task",
+            type="primary" if selected == "Task & Dataset" else "secondary",
+            use_container_width=True,
+        ):
+            st.session_state["data_prep_activity"] = "Task & Dataset"
+    with col2:
+        if st.button(
+            "02. Quality & Exploratory Review",
+            key="dp_quality",
+            type="primary" if selected == "Quality & Exploratory Review" else "secondary",
+            use_container_width=True,
+        ):
+            st.session_state["data_prep_activity"] = "Quality & Exploratory Review"
+    with col3:
+        if st.button(
+            "03. Patient-Safe Split",
+            key="dp_split",
+            type="primary" if selected == "Patient-Safe Split" else "secondary",
+            use_container_width=True,
+        ):
+            st.session_state["data_prep_activity"] = "Patient-Safe Split"
+    with col4:
+        if st.button(
+            "04. Standardized Preprocessing",
+            key="dp_preprocessing",
+            type="primary" if selected == "Standardized Preprocessing" else "secondary",
+            use_container_width=True,
+        ):
+            st.session_state["data_prep_activity"] = "Standardized Preprocessing"
+
+    st.markdown('<div class="cxr-workstreams">', unsafe_allow_html=True)
+    col_class, col_seg = st.columns(2, gap="medium")
+    with col_class:
+        st.markdown(
+            """
+            <div class="cxr-workstream-card cxr-workstream-card--teal">
+              <p class="cxr-workstream-card__eyebrow">MODEL TRACK 01</p>
+              <p class="cxr-workstream-card__title">Chest X-ray Classification</p>
+              <p class="cxr-workstream-card__subtitle">Multi-label classification · 14 binary findings</p>
+              <span class="cxr-workstream-card__badge cxr-workstream-card__badge--teal">Active training workflow</span>
+              <p class="cxr-workstream-card__desc">
+                Uses duplicate-free, patient-safe X-ray splits for baseline training, fine-tuning, validation,
+                and one protected final test evaluation.
+              </p>
+              <p class="cxr-workstream-card__desc" style="margin-top:0.15rem;">
+                795 training images · 207 validation images · 420 protected test images
+              </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with col_seg:
+        st.markdown(
+            """
+            <div class="cxr-workstream-card cxr-workstream-card--navy">
+              <p class="cxr-workstream-card__eyebrow">MODEL TRACK 02</p>
+              <p class="cxr-workstream-card__title">Brain MRI Tumor Segmentation</p>
+              <p class="cxr-workstream-card__subtitle">Tumor-region segmentation · U-Net workflow</p>
+              <span class="cxr-workstream-card__badge cxr-workstream-card__badge--navy">Proof-of-concept / preparation</span>
+              <p class="cxr-workstream-card__desc">
+                MRI preprocessing, mask pairing, patient-level splitting, and U-Net evaluation are tracked separately
+                from the X-ray classification workflow.
+              </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    if st.session_state["data_prep_activity"] == "Task & Dataset":
         _prep_task_and_dataset()
-    with tab_quality:
+    elif st.session_state["data_prep_activity"] == "Quality & Exploratory Review":
         _prep_quality_review()
-    with tab_split:
+    elif st.session_state["data_prep_activity"] == "Patient-Safe Split":
         _prep_patient_safe_split()
-    with tab_preprocess:
+    else:
         _prep_standardized_preprocessing()
 
     render_prep_governance_panel()
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 def _metric_cards(metrics: list[tuple[str, str]]) -> str:

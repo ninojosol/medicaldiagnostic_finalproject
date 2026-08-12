@@ -80,47 +80,73 @@ div[data-testid="stBottom"] {
 }
 
 .main .block-container {
-  padding-top: 1.15rem;
+  padding-top: 0.75rem;
   padding-bottom: 2.5rem;
   padding-left: 2rem;
   padding-right: 2rem;
   max-width: 100%;
 }
 
-/* Header */
+/* Header — compact full-width row, no card panel */
 
 .cxr-header {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 1.35rem 1.6rem 1.25rem;
-  margin-bottom: 1.15rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem 1.1rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0.15rem 0 0.65rem;
+  margin: 0 0 0.55rem;
 }
 
 .cxr-header__eyebrow {
-  margin: 0 0 0.4rem;
+  margin: 0;
   font-size: 0.72rem;
   font-weight: 650;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--teal);
+  white-space: nowrap;
 }
 
 .cxr-header__title {
   margin: 0;
-  font-size: 1.75rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
   color: var(--navy) !important;
   line-height: 1.25;
+  white-space: nowrap;
 }
 
 .cxr-header__subtitle {
-  margin: 0.5rem 0 0;
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  line-height: 1.45;
+  margin: 0;
+  font-size: 0.82rem;
+  font-style: italic;
+  color: var(--text-muted);
+  line-height: 1.35;
+  flex: 1 1 14rem;
+  min-width: 12rem;
+}
+
+@media (max-width: 900px) {
+  .cxr-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+
+  .cxr-header__title,
+  .cxr-header__eyebrow {
+    white-space: normal;
+  }
+
+  .cxr-header__title {
+    font-size: 1.05rem;
+  }
 }
 
 /* Section titles */
@@ -147,7 +173,7 @@ div[data-testid="stBottom"] {
 }
 
 .cxr-stage-nav-spacer {
-  height: 0.85rem;
+  height: 0.45rem;
 }
 
 /* Style the three equal stage buttons immediately after the marker */
@@ -488,24 +514,99 @@ div[data-testid="stFileUploader"] {
   padding: 0.5rem;
 }
 
-/* Keep inner inference tab labels fully visible */
-button[data-baseweb="tab"] {
-  font-weight: 600 !important;
-  color: var(--navy) !important;
-  opacity: 1 !important;
-  visibility: visible !important;
+/* Keep inner tab labels fully visible and high-contrast.
+   Defeat Streamlit theme primary (often red) and washed-out inactive text. */
+div[data-testid="stTabs"] [data-baseweb="tab-list"] {
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  border-bottom: none !important;
+  margin-bottom: 0.85rem;
+  background: transparent !important;
 }
 
-button[data-baseweb="tab"] p,
-button[data-baseweb="tab"] span {
-  color: inherit !important;
+div[data-testid="stTabs"] button[data-baseweb="tab"],
+div[data-testid="stTabs"] button[role="tab"] {
+  font-weight: 650 !important;
+  font-size: 0.9rem !important;
+  line-height: 1.25 !important;
+  min-height: 2.35rem !important;
+  padding: 0.45rem 0.9rem !important;
+  margin: 0 0.1rem 0.25rem 0 !important;
+  border-radius: 6px !important;
+  border: 1px solid #d5dee6 !important;
+  background: #ffffff !important;
+  color: #0b1f36 !important;
   opacity: 1 !important;
   visibility: visible !important;
-  font-size: 0.92rem !important;
+  box-shadow: none !important;
+  white-space: nowrap !important;
 }
 
-button[data-baseweb="tab"][aria-selected="true"] {
-  color: var(--teal) !important;
+div[data-testid="stTabs"] button[data-baseweb="tab"] *,
+div[data-testid="stTabs"] button[role="tab"] * {
+  color: #0b1f36 !important;
+  fill: #0b1f36 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  font-size: 0.9rem !important;
+  font-weight: 650 !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+}
+
+div[data-testid="stTabs"] button[data-baseweb="tab"]:hover,
+div[data-testid="stTabs"] button[role="tab"]:hover,
+div[data-testid="stTabs"] button[data-baseweb="tab"]:focus,
+div[data-testid="stTabs"] button[role="tab"]:focus,
+div[data-testid="stTabs"] button[data-baseweb="tab"]:focus-visible,
+div[data-testid="stTabs"] button[role="tab"]:focus-visible {
+  color: #2a7a7b !important;
+  background: #e8f4f4 !important;
+  border-color: #b7d4d5 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+div[data-testid="stTabs"] button[data-baseweb="tab"]:hover *,
+div[data-testid="stTabs"] button[role="tab"]:hover *,
+div[data-testid="stTabs"] button[data-baseweb="tab"]:focus *,
+div[data-testid="stTabs"] button[role="tab"]:focus * {
+  color: #2a7a7b !important;
+  fill: #2a7a7b !important;
+}
+
+div[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"],
+div[data-testid="stTabs"] button[role="tab"][aria-selected="true"] {
+  color: #ffffff !important;
+  background: #2a7a7b !important;
+  border-color: #2a7a7b !important;
+}
+
+div[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] *,
+div[data-testid="stTabs"] button[role="tab"][aria-selected="true"] * {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+
+div[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"]:hover,
+div[data-testid="stTabs"] button[role="tab"][aria-selected="true"]:hover {
+  color: #ffffff !important;
+  background: #246668 !important;
+  border-color: #246668 !important;
+}
+
+div[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"]:hover *,
+div[data-testid="stTabs"] button[role="tab"][aria-selected="true"]:hover * {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+
+/* Hide BaseWeb red/primary underline highlight under tabs */
+div[data-testid="stTabs"] [data-baseweb="tab-highlight"],
+div[data-testid="stTabs"] [data-baseweb="tab-border"] {
+  background-color: transparent !important;
+  border-color: transparent !important;
 }
 
 div[data-testid="stExpander"] {
@@ -520,10 +621,6 @@ div[data-testid="stExpander"] {
   .main .block-container {
     padding-left: 1rem;
     padding-right: 1rem;
-  }
-
-  .cxr-header__title {
-    font-size: 1.4rem;
   }
 
   div[data-testid="stHorizontalBlock"]:has(button[kind]) .stButton > button {
@@ -969,42 +1066,134 @@ div[data-testid="stPills"] [role="button"][aria-pressed="true"] {
   margin: 0.22rem 0;
 }
 
-/* Inner inference tabs: clear but smaller than major pipeline tabs */
-div[data-testid="stTabs"] button[data-baseweb="tab"] {
-  font-size: 0.95rem !important;
-  font-weight: 650 !important;
-  padding-top: 0.55rem !important;
-  padding-bottom: 0.55rem !important;
-  min-height: 2.6rem !important;
-}
-
-div[data-testid="stTabs"] button[data-baseweb="tab"] p,
-div[data-testid="stTabs"] button[data-baseweb="tab"] span {
-  font-size: 0.95rem !important;
-}
-
-/* Inner tab labels must never truncate or clip */
-div[data-testid="stTabs"] div[data-baseweb="tab-list"] {
-  flex-wrap: wrap;
-  gap: 0.2rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 1rem;
-}
-
-div[data-testid="stTabs"] button[data-baseweb="tab"] {
-  white-space: nowrap !important;
-}
-
-div[data-testid="stTabs"] button[data-baseweb="tab"] p {
-  overflow: visible !important;
-  text-overflow: clip !important;
-  white-space: nowrap !important;
-}
-
 /* ---------- Data Preparation: tables, confirmations, governance ---------- */
 
 .cxr-prep-tabs-marker {
   display: none;
+}
+
+/* Data Preparation sub-activity buttons (scoped, no effect on main pipeline tabs) */
+.st-key-dp_task button[kind],
+.st-key-dp_quality button[kind],
+.st-key-dp_split button[kind],
+.st-key-dp_preprocessing button[kind] {
+  border-radius: 8px !important;
+  padding: 0.34rem 0.55rem !important;
+  font-weight: 750 !important;
+  letter-spacing: 0.01em;
+  background: #ffffff !important;
+  color: #16365C !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: none !important;
+  white-space: normal !important;
+  line-height: 1.25 !important;
+  font-size: 0.82rem !important;
+}
+
+.st-key-dp_task button[kind]:hover,
+.st-key-dp_quality button[kind]:hover,
+.st-key-dp_split button[kind]:hover,
+.st-key-dp_preprocessing button[kind]:hover {
+  background: var(--teal-soft) !important;
+  color: #16365C !important;
+  border-color: var(--teal-border) !important;
+  box-shadow: none !important;
+}
+
+/* Selected state (Streamlit uses kind="primary" for primary buttons) */
+.st-key-dp_task button[kind="primary"],
+.st-key-dp_quality button[kind="primary"],
+.st-key-dp_split button[kind="primary"],
+.st-key-dp_preprocessing button[kind="primary"] {
+  background: var(--teal) !important;
+  border-color: var(--teal-border) !important;
+  box-shadow: inset 0 -2px 0 rgba(42, 122, 123, 0.35) !important;
+  color: #ffffff !important;
+}
+
+/* Workstream cards under Data Preparation */
+.cxr-workstreams {
+  margin: 0.75rem 0 0.65rem;
+}
+
+.cxr-workstream-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: none;
+  padding: 0.95rem 1.0rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.cxr-workstream-card--teal {
+  border-left: 4px solid var(--teal);
+}
+
+.cxr-workstream-card--navy {
+  border-left: 4px solid var(--navy);
+}
+
+.cxr-workstream-card__eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.cxr-workstream-card__title {
+  margin: 0 0 0.25rem;
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: var(--navy) !important;
+}
+
+.cxr-workstream-card__subtitle {
+  margin: 0 0 0.55rem;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.cxr-workstream-card__desc {
+  margin: 0.35rem 0 0;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.cxr-workstream-card__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+  margin-bottom: 0.65rem;
+}
+
+.cxr-workstream-card__badge--teal {
+  background: var(--teal-soft);
+  color: var(--teal);
+  border-color: var(--teal-border);
+}
+
+.cxr-workstream-card__badge--navy {
+  background: #f3f6fb;
+  color: var(--navy);
+  border-color: var(--border);
+}
+
+@media (max-width: 700px) {
+  .cxr-workstreams {
+    margin-top: 0.55rem;
+  }
 }
 
 .cxr-table-wrap {
