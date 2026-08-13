@@ -41,6 +41,8 @@ scikit-learn>=1.4
 # --- plotting --------------------------------------------------------------
 matplotlib>=3.8
 seaborn>=0.13
+plotly>=5.18
+altair>=5.0
 
 # --- configuration & utilities ---------------------------------------------
 PyYAML>=6.0

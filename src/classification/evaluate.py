@@ -2,14 +2,23 @@
 
 Protocol enforced here:
 
-1. predict on **validation** -> select per-label thresholds;
+1. predict on **validation** -> select per-label thresholds, write
+   ``metrics/metrics_validation.csv``, ``metrics/thresholds.json`` and
+   ``predictions/validation_predictions.csv``;
 2. predict on **test** -> compute every metric with those frozen thresholds;
 3. bootstrap confidence intervals on the test predictions;
 4. write metrics (CSV + JSON), curves, confusion matrices and per-image
    predictions under ``outputs/classification/<run>/``.
 
 The test set is touched exactly once, for reporting. No threshold, epoch or
-architecture is chosen using it.
+architecture is chosen using it. Step 2 onwards is skipped entirely when the
+caller supplies no ``test`` loader, which is how every currently reported run was
+produced - those runs are validation-only.
+
+``predictions/validation_predictions.csv`` comes from the **validation loader
+only** and is what the Streamlit app plots (confusion matrices, micro-averaged
+ROC / PR curves). ``predictions/test_predictions.csv`` is the separate test-set
+file and is never read by the app.
 """
 
 from __future__ import annotations
@@ -35,23 +44,63 @@ from .train import predict
 
 
 def predictions_dataframe(paths, y_true: np.ndarray, y_prob: np.ndarray, labels,
-                          thresholds: dict | float = 0.5) -> pd.DataFrame:
+                          thresholds: dict | float = 0.5,
+                          patient_ids=None) -> pd.DataFrame:
     """Per-image table: path, true labels, predicted probabilities, hard predictions.
 
     Saving this makes the results auditable and lets you inspect specific
     failures later without re-running the model.
+
+    Columns, in order:
+
+    ``image_path``
+        Absolute path the loader read.
+    ``image``
+        Bare filename, so rows can be joined against the manifest CSVs.
+    ``patient_id``
+        Only present when the manifest carried one - included so leakage can be
+        re-checked from the predictions alone.
+    ``true_<label>`` / ``prob_<label>`` / ``pred_<label>``
+        Ground truth, sigmoid probability, and the hard decision
+        ``prob >= threshold``, one triple per label in ``labels`` order.
+
+    ``prob_*`` is rounded to 6 decimals for a readable file; ``pred_*`` is derived
+    from the FULL-precision probability, so a value sitting exactly on its
+    threshold can round below it in the CSV. Recompute hard decisions from
+    ``pred_*``, not from the rounded ``prob_*``.
     """
     y_true = np.asarray(y_true).reshape(-1, len(labels))
     y_prob = np.asarray(y_prob).reshape(-1, len(labels))
 
-    data = {"image_path": list(paths) if paths is not None and len(paths) == len(y_true)
-            else [""] * len(y_true)}
+    path_list = (list(paths) if paths is not None and len(paths) == len(y_true)
+                 else [""] * len(y_true))
+    data: dict[str, object] = {
+        "image_path": path_list,
+        "image": [Path(p).name if p else "" for p in path_list],
+    }
+    if patient_ids is not None and len(patient_ids) == len(y_true):
+        data["patient_id"] = list(patient_ids)
+
     for i, label in enumerate(labels):
         thr = thresholds.get(label, 0.5) if isinstance(thresholds, dict) else float(thresholds)
         data[f"true_{label}"] = y_true[:, i].astype(int)
         data[f"prob_{label}"] = np.round(y_prob[:, i], 6)
         data[f"pred_{label}"] = (y_prob[:, i] >= thr).astype(int)
     return pd.DataFrame(data)
+
+
+def _patient_ids_for_paths(loader, paths) -> list | None:
+    """Look up the manifest ``patient_id`` for each predicted image path.
+
+    Returns ``None`` when the underlying manifest has no patient column, so the
+    caller can simply omit the field instead of inventing identifiers.
+    """
+    dataset = getattr(loader, "dataset", None)
+    df = getattr(dataset, "df", None)
+    if df is None or "patient_id" not in getattr(df, "columns", []):
+        return None
+    lookup = dict(zip(df["image_path"].astype(str), df["patient_id"]))
+    return [lookup.get(str(p)) for p in paths]
 
 
 def evaluate_classifier(model, loaders: dict, cfg, device, run_name: str | None = None,
@@ -81,8 +130,22 @@ def evaluate_classifier(model, loaders: dict, cfg, device, run_name: str | None 
         save_csv(threshold_table, dirs["metrics"] / "thresholds_from_validation.csv")
         save_csv(val_metrics, dirs["metrics"] / "metrics_validation.csv")
         save_json(thresholds, dirs["metrics"] / "thresholds.json")
+
+        # Per-image VALIDATION predictions. Written from loaders["val"] only - the
+        # test loader is never involved here. This file is the single source the
+        # Streamlit "Train & Validate" page reads for the aggregated confusion
+        # matrices and the micro-averaged ROC / PR curves, so it must stay in the
+        # same label order as `labels` and carry the same frozen thresholds that
+        # metrics_validation.csv was scored with.
+        val_predictions = predictions_dataframe(
+            val_paths, val_true, val_prob, labels, thresholds,
+            patient_ids=_patient_ids_for_paths(loaders["val"], val_paths),
+        )
+        save_csv(val_predictions, dirs["predictions"] / "validation_predictions.csv")
+
         results.update({"thresholds": thresholds, "val_metrics": val_metrics,
-                        "val_true": val_true, "val_prob": val_prob})
+                        "val_true": val_true, "val_prob": val_prob,
+                        "val_predictions": val_predictions})
 
         for i, label in enumerate(labels):
             fig = plot_threshold_sweep(val_true[:, i], val_prob[:, i],

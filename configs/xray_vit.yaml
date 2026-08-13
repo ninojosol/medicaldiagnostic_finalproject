@@ -1,0 +1,172 @@
+# ===========================================================================
+# Chest X-ray classification - EXPERIMENTAL COMPARATOR (pretrained ViT-B/16)
+#
+# STATUS: experimental fourth comparator. It is NOT the selected model.
+# `outputs/classification/model_comparison.json` is the FROZEN record of the
+# original three-model comparison: the run script reads it but never writes it, so
+# the validation-selected model recorded there (Fine-tuned EfficientNet-B0) does
+# not change. ViT results are written to a separate derived artifact,
+# `outputs/classification/model_comparison_with_vit_experimental.json`, which
+# copies the frozen record verbatim, adds the ViT entry, and reports under
+# `experimental_selection` whether ViT exceeds EfficientNet-B0 on the primary
+# criterion (validation macro ROC-AUC), with macro PR-AUC as supporting context.
+# Promoting ViT would be a separate, explicit decision.
+#
+# Keep `data:` IDENTICAL to xray_baseline.yaml / xray_transfer.yaml so the
+# comparison stays fair - same images, same split, same labels, same manifests -
+# with ONE documented, architecture-forced exception:
+#
+#   data.image_size: 224 (not 320)
+#     torchvision's ViT-B/16 has learned positional embeddings tied to a fixed
+#     14 x 14 grid of 16 x 16 patches, i.e. exactly 224 x 224 input. Feeding 320 x 320
+#     raises a shape error unless the position embeddings are interpolated, which
+#     would no longer be the released pretrained model. The three frozen CNN runs
+#     are fully convolutional and were trained at 320. This resolution difference
+#     is a real confound in the comparison and must be stated in the report:
+#     ViT-B/16 sees less spatial detail than the CNN comparators.
+#
+# NORMALIZATION: identical to the frozen transfer runs. `model.pretrained: true`
+# makes src/classification/transforms.py select ImageNet mean/std
+# (0.485,0.456,0.406)/(0.229,0.224,0.225), which is exactly what
+# ViT_B_16_Weights.IMAGENET1K_V1 expects.
+#
+# RESIZE: the project convention (a direct square resize, no center crop) is kept
+# deliberately. torchvision's own ViT preset is resize-256 then center-crop-224,
+# which would discard the image border - on a chest radiograph that is where
+# costophrenic-angle effusions and apical pneumothoraces live. A direct resize
+# keeps the full field of view for every model in the comparison.
+#
+# The reproducibility script is scripts/run_xray_finetune_vit.py. It reads THIS
+# file (there is no saved snapshot to replay yet) and refuses to overwrite an
+# existing run directory unless --force is passed.
+#
+# AUTHORITATIVE RECORD once a run completes: the snapshot written next to its
+# artifacts, outputs/classification/<run_name>/config_used.yaml.
+#
+# First run downloads ImageNet ViT-B/16 weights (~330 MB) and needs internet.
+# ===========================================================================
+inherits: base.yaml
+
+run_name: xray_finetuned_vit_b16_multilabel_224
+
+data:
+  root: data/raw/xray/nih
+  layout: csv
+
+  # The same patient-safe manifests the three frozen runs used. train_clean.csv
+  # and valid_clean.csv only; test.csv is never read by the ViT script.
+  csv_path: data/processed/xray/train_clean.csv
+  image_root: data/raw/xray/nih/images-small
+  image_column: Image
+  patient_column: PatientId
+
+  # Frozen NIH-14 order - shared with xray_baseline.yaml, xray_transfer.yaml and
+  # every existing artifact. Do not reorder.
+  labels:
+    - Atelectasis
+    - Cardiomegaly
+    - Consolidation
+    - Edema
+    - Effusion
+    - Emphysema
+    - Fibrosis
+    - Hernia
+    - Infiltration
+    - Mass
+    - Nodule
+    - Pleural_Thickening
+    - Pneumonia
+    - Pneumothorax
+
+  unlisted_folders_as_negative: true
+  patient_id_regex: null
+
+  image_size: 224         # forced by ViT-B/16 positional embeddings (see header)
+  val_size: 0.15
+  test_size: 0.15
+  use_official_split: true
+
+model:
+  name: vit_b_16
+  pretrained: true        # ImageNet weights; also selects ImageNet mean/std normalization
+  # Stage 2 of the two-stage schedule builds the model with the backbone frozen and
+  # then re-opens ONLY the last `vit_unfreeze_last_blocks` encoder blocks in code
+  # (src.classification.models.unfreeze_vit_encoder_blocks), mirroring the saved
+  # EfficientNet-B0 run. Stage 1 leaves the whole backbone frozen.
+  freeze_backbone: true
+  vit_unfreeze_last_blocks: 2
+  dropout: 0.2
+  pretrained_source: torchvision ImageNet weights (weights=DEFAULT -> ViT_B_16_Weights.IMAGENET1K_V1) for vit_b_16
+  # Recorded verbatim into config_used.yaml / run_metadata.json so the exact
+  # transform is auditable from the artifacts alone.
+  input_preprocessing:
+    input: grayscale frontal chest X-ray PNG
+    to_rgb: single channel replicated to 3 channels
+    resize: direct square resize to 224 x 224 (antialias), no center crop
+    normalization_mean: [0.485, 0.456, 0.406]
+    normalization_std: [0.229, 0.224, 0.225]
+    normalization_source: ImageNet statistics, as required by ViT_B_16_Weights.IMAGENET1K_V1
+    train_val_identical: true
+    deviation_from_torchvision_preset: >-
+      torchvision's ViT preset resizes to 256 then center-crops to 224; this run
+      resizes directly to 224 to preserve the lung periphery and to match the
+      preprocessing convention of the three frozen comparator runs.
+
+augmentation:
+  # Zero magnitudes, exactly like the frozen runs: preprocessing is identical for
+  # train, validation and inference. hflip stays 0.0 - mirroring a chest X-ray
+  # moves the heart to the right hemithorax, which is anatomically wrong.
+  hflip: 0.0
+  rotation_degrees: 0.0
+  translate: 0.0
+  scale: [1.0, 1.0]
+  brightness: 0.0
+  contrast: 0.0
+  random_erasing: 0.0
+
+train:
+  # ---- stage 2 (partial fine-tune) values ----------------------------------
+  epochs: 10
+  batch_size: 32
+  # 1e-4 (the CNN fine-tuning LR) is too large for a pretrained ViT backbone: it
+  # erases the pretrained attention patterns within an epoch on 795 images. 2e-5
+  # is the conventional AdamW fine-tuning LR for ViT-B and is the one documented
+  # deviation from the CNN runs' optimisation settings. Loss, optimizer, weight
+  # decay, scheduler, class weighting, monitor and early stopping are unchanged.
+  lr: 0.00002
+  weight_decay: 0.0001
+  optimizer: adamw
+  scheduler: plateau
+  scheduler_patience: 2
+  loss: weighted_bce
+  use_class_weights: true
+  monitor: val_roc_auc
+  early_stopping_patience: 3
+
+# ---- stage 1 (head-only linear probe) overrides ----------------------------
+# Applied by scripts/run_xray_finetune_vit.py on top of `train:` above for the
+# stage-1 run only. This block is copied into BOTH stages' config_used.yaml
+# snapshots; the values a given stage actually trained with are the ones in that
+# snapshot's own `train:` block.
+# The head is randomly initialised on top of a frozen backbone, so it is a linear
+# probe and takes the usual large probe LR (1e-3), not the fine-tuning LR.
+vit_stage1_overrides:
+  epochs: 5
+  lr: 0.001
+  early_stopping_patience: 2
+
+eval:
+  threshold_strategy: f1
+  min_recall: 0.80
+  n_bootstrap: 1000       # test-set CIs only; unused in this validation-only run
+
+gradcam:
+  # Not applicable to ViT: get_gradcam_target_layer() raises for vit_* because a
+  # transformer has no final conv feature map. Kept so the config shape matches
+  # the other X-ray configs.
+  class_index: 0
+  examples_per_group: 2
+  alpha: 0.4
+
+output:
+  root: outputs/classification

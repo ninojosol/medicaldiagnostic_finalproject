@@ -1,0 +1,70 @@
+seed: 42
+deterministic: true
+device: auto
+train:
+  num_workers: 0
+  amp: true
+  progress: true
+  grad_clip: 1.0
+  epochs: 15
+  batch_size: 32
+  lr: 0.001
+  weight_decay: 0.0001
+  optimizer: adamw
+  scheduler: plateau
+  scheduler_patience: 2
+  loss: weighted_bce
+  use_class_weights: true
+  monitor: val_roc_auc
+  early_stopping_patience: 5
+_config_file: D:\AI Engineering\medicaldiagnostic_finalproject\configs\base.yaml
+run_name: xray_baseline_cnn_from_scratch_multilabel_320
+data:
+  root: D:\AI Engineering\medicaldiagnostic_finalproject\data\raw\xray\nih
+  layout: csv
+  labels:
+  - Atelectasis
+  - Cardiomegaly
+  - Consolidation
+  - Edema
+  - Effusion
+  - Emphysema
+  - Fibrosis
+  - Hernia
+  - Infiltration
+  - Mass
+  - Nodule
+  - Pleural_Thickening
+  - Pneumonia
+  - Pneumothorax
+  unlisted_folders_as_negative: true
+  patient_id_regex: null
+  image_size: 320
+  val_size: 0.15
+  test_size: 0.15
+  use_official_split: true
+  image_root: D:\AI Engineering\medicaldiagnostic_finalproject\data\raw\xray\nih\images-small
+  image_column: Image
+  patient_column: PatientId
+  csv_path: D:\AI Engineering\medicaldiagnostic_finalproject\data\processed\xray\train_clean.csv
+model:
+  name: simple_cnn
+  pretrained: true
+  base_width: 32
+  dropout: 0.3
+augmentation:
+  hflip: 0.0
+  rotation_degrees: 0.0
+  translate: 0.0
+  scale:
+  - 1.0
+  - 1.0
+  brightness: 0.0
+  contrast: 0.0
+  random_erasing: 0.0
+eval:
+  threshold_strategy: f1
+  min_recall: 0.8
+  n_bootstrap: 1000
+output:
+  root: D:\AI Engineering\medicaldiagnostic_finalproject\outputs\classification

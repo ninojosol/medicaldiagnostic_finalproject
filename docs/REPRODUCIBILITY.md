@@ -93,3 +93,65 @@ Then add one honest sentence, e.g.:
 > Re-running on the same machine reproduces the reported metrics; results on
 > different hardware or library versions may differ slightly due to
 > non-deterministic GPU kernels and mixed-precision accumulation order.
+
+---
+
+## Which pipeline produced the reported X-ray results
+
+Two pipelines exist in this repository. Only one produced the reported numbers.
+
+| | Reported results | Superseded |
+|---|---|---|
+| Framework | **PyTorch** | TensorFlow / Keras |
+| Code | `src/classification/`, `scripts/run_xray_*.py`, `run_xray_finetune_efficientnet_b0.py` | `notebooks/02_xray_model_baseline.ipynb`, `notebooks/03_xray_model_finetuning.ipynb` |
+| Artifacts | `outputs/classification/<run_name>/` | `outputs/models/xray/*.keras` |
+
+Notebooks 02 and 03 are an earlier TensorFlow/Keras exploration, kept for the
+record and clearly retitled *"Superseded exploratory experiment — not used for
+reported results"*. **They are not the source of any reported metric, figure or
+threshold.** Nothing in the Streamlit app reads their outputs.
+
+### Authoritative per-run configuration
+
+For any completed run, the authoritative configuration is the snapshot written
+next to its artifacts:
+
+```
+outputs/classification/<run_name>/config_used.yaml    # every hyper-parameter, as used
+outputs/classification/<run_name>/run_metadata.json   # + environment, best epoch, best score
+```
+
+The files in `configs/` are **templates for launching new experiments**. They are
+kept aligned with the reported runs, but if the two ever disagree, the snapshot in
+`outputs/` is correct — it was written by the run itself.
+
+### The three reported runs
+
+| Model | Run name | Script |
+|---|---|---|
+| Baseline CNN | `xray_baseline_cnn_from_scratch_multilabel_320` | `scripts/run_xray_baseline_cnn.py` |
+| Fine-tuned DenseNet | `xray_finetuned_densenet_multilabel_320` (+ `_stage1_head_only`) | `scripts/run_xray_finetune_densenet.py` |
+| Fine-tuned EfficientNet-B0 | `xray_finetuned_efficientnet_b0_multilabel_320` (+ `_stage1_head_only`) | `run_xray_finetune_efficientnet_b0.py` |
+
+The two `scripts/run_xray_*.py` files were **reconstructed** from each run's own
+`config_used.yaml` after the originals were lost; they are not byte-verified
+replays of the saved checkpoints (see the header of each script). All three
+scripts refuse to overwrite an existing run directory unless `--force` is passed,
+so the reported artifacts cannot be clobbered by accident.
+
+All three runs are **validation-only**: they build `train` and `val` loaders and
+no `test` loader, so `evaluate_classifier` stops after its validation stage and
+the official test set is never scored.
+
+### Where the validation curves and confusion matrices come from
+
+`outputs/classification/<run_name>/predictions/validation_predictions.csv` is
+written by `evaluate_classifier` from the **validation loader only**. It is the
+single source the Streamlit "Train & Validate" page reads for the aggregated
+one-vs-rest confusion matrices and the micro-averaged ROC / PR curves.
+
+Schema: `image_path`, `image`, `patient_id`, then one
+`true_<label>` / `prob_<label>` / `pred_<label>` triple per finding, in the frozen
+NIH-14 label order. `prob_*` is rounded to 6 decimals for readability while
+`pred_*` is derived from the full-precision probability, so recompute hard
+decisions from `pred_*`, never from the rounded `prob_*`.

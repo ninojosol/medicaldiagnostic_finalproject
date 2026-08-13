@@ -4,78 +4,92 @@
 # Purpose: an honest reference point. Whatever the transfer-learning model
 # scores only means something relative to this.
 #
-# EDIT `data:` TO MATCH YOUR DATASET BEFORE RUNNING NOTEBOOK 01.
+# This file mirrors the settings of the reported run
+# `xray_baseline_cnn_from_scratch_multilabel_320`.
+#
+# AUTHORITATIVE RECORD: the exact configuration of any completed run is the
+# snapshot written next to its artifacts:
+#   outputs/classification/<run_name>/config_used.yaml
+# The reproducibility script scripts/run_xray_baseline_cnn.py loads that
+# snapshot, not this file. Edit this file to launch a NEW experiment.
 # ===========================================================================
 inherits: base.yaml
 
-run_name: xray_baseline_cnn
+run_name: xray_baseline_cnn_from_scratch_multilabel_320
 
 data:
   # --- where the images are ------------------------------------------------
-  # Path is relative to the project root.
-  root: data/raw/xray
+  root: data/raw/xray/nih
 
   # --- how the dataset is organised ---------------------------------------
-  # folders : <root>[/<split>]/<class_name>/*.png   (Kaggle-style)
-  # csv     : a metadata CSV lists images and labels (needed for multi-label)
-  layout: folders
+  # csv: manifest CSVs list the images and one binary column per finding.
+  # This project is multi-label, so `folders` layout is not applicable.
+  layout: csv
 
-  # --- the classes you want the model to predict --------------------------
-  # One entry  -> binary task (that label vs the rest).
-  # Many entries -> one sigmoid output per label (multi-label).
-  # With layout: folders these MUST match the class folder names (case-insensitive).
+  # Manifest built by notebook 01 (deduplicated, patient-level split).
+  # The scripts pass train_clean.csv + valid_clean.csv through
+  # make_manifest(); the official test.csv is deliberately NOT referenced.
+  csv_path: data/processed/xray/train_clean.csv
+  image_root: data/raw/xray/nih/images-small
+  image_column: Image
+  patient_column: PatientId
+
+  # --- the 14 NIH ChestX-ray findings, one sigmoid output per label -------
+  # This order is frozen: it is the order used by every checkpoint, threshold
+  # file, metrics CSV and the Streamlit app. Do not reorder.
   labels:
-    - PNEUMONIA
+    - Atelectasis
+    - Cardiomegaly
+    - Consolidation
+    - Edema
+    - Effusion
+    - Emphysema
+    - Fibrosis
+    - Hernia
+    - Infiltration
+    - Mass
+    - Nodule
+    - Pleural_Thickening
+    - Pneumonia
+    - Pneumothorax
 
-  # With layout: folders, what to do with images in class folders NOT listed
-  # above (e.g. NORMAL/ when labels is [PNEUMONIA]):
-  #   true  -> keep them as the NEGATIVE class. This is what makes
-  #            labels: [PNEUMONIA] mean "PNEUMONIA vs everything else".
-  #   false -> drop them entirely. Only correct when those folders are a
-  #            different task, NOT the negative class.
-  # Leaving this true is almost always what you want for a binary task.
   unlisted_folders_as_negative: true
 
-  # --- CSV-layout settings (ignored when layout: folders) -----------------
-  # csv_path: data/raw/xray/labels.csv
-  # image_root: data/raw/xray/images     # what the CSV paths are relative to
-  # image_column: Image Index            # column holding the image path/filename
-  # patient_column: Patient ID           # column holding the patient identifier
-  # label_column: Finding Labels         # single column of class names, or...
-  # label_separator: "|"                 # ...separator-joined findings
-  # split_column: null                   # column with an official train/test split
-
-  # --- patient-level splitting --------------------------------------------
-  # Regex with ONE capturing group, applied to the file name then the full path.
-  # Leave null if the dataset has no patient IDs (each image is then treated as
-  # its own patient - state this limitation in the report).
-  # NIH ChestX-ray14 style "00000013_005.png":  '^(\d+)_'
+  # Patient IDs come from the manifest's PatientId column, so no regex is
+  # needed to recover them from filenames.
   patient_id_regex: null
 
-  image_size: 224
+  image_size: 320
   val_size: 0.15
   test_size: 0.15
-  # true  -> honour the dataset's own train/test folders and carve val out of train
-  # false -> build a fresh patient-level train/val/test split
+  # The split is pre-computed by notebook 01 with GroupShuffleSplit over
+  # PatientId; the training scripts consume it as-is.
   use_official_split: true
 
 model:
   name: simple_cnn      # simple_cnn | densenet121 | efficientnet_b0 | efficientnet_b3 | resnet18 | resnet50
-  pretrained: false     # from scratch: this is the baseline
+  # SimpleCNN ignores this for weights - it is always randomly initialised, so
+  # this really is a from-scratch baseline. The flag is read by
+  # build_transforms(), where true selects ImageNet mean/std normalization
+  # instead of 0.5/0.5. Kept true so all three compared models share one input
+  # pipeline and the comparison isolates the architecture.
+  pretrained: true
   base_width: 32        # simple_cnn only; width of the first conv block
   dropout: 0.3
 
 augmentation:
+  # All magnitudes are zero in the reported runs: preprocessing is identical
+  # for train, validation and inference, which is what the report claims.
   hflip: 0.0            # OFF: a mirrored chest X-ray is anatomically wrong
-  rotation_degrees: 7
-  translate: 0.05
-  scale: [0.92, 1.08]
-  brightness: 0.10
-  contrast: 0.10
+  rotation_degrees: 0.0
+  translate: 0.0
+  scale: [1.0, 1.0]
+  brightness: 0.0
+  contrast: 0.0
   random_erasing: 0.0
 
 train:
-  epochs: 15
+  epochs: 15                  # stopped early at epoch 10 in the reported run
   batch_size: 32
   lr: 0.001
   weight_decay: 0.0001
@@ -91,7 +105,7 @@ eval:
   # f1 | youden | min_recall  -- always selected on VALIDATION data only
   threshold_strategy: f1
   min_recall: 0.80            # used only when threshold_strategy: min_recall
-  n_bootstrap: 1000           # 0 disables confidence intervals
+  n_bootstrap: 1000           # test-set CIs only; unused in validation-only runs
 
 output:
   root: outputs/classification

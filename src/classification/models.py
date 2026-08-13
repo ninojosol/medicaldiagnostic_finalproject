@@ -15,7 +15,13 @@ import torch
 import torch.nn as nn
 from torchvision import models as tvm
 
-SUPPORTED_BACKBONES = ["densenet121", "efficientnet_b0", "efficientnet_b3", "resnet18", "resnet50"]
+SUPPORTED_BACKBONES = [
+    "densenet121", "efficientnet_b0", "efficientnet_b3", "resnet18", "resnet50",
+    # Vision Transformers. Unlike the CNNs above these have a FIXED input
+    # resolution (224 for vit_b_16/vit_b_32): the learned positional embeddings
+    # are tied to the 14x14 / 7x7 patch grid, so data.image_size must be 224.
+    "vit_b_16", "vit_b_32",
+]
 
 
 class SimpleCNN(nn.Module):
@@ -107,6 +113,13 @@ def build_transfer_model(name: str = "densenet121", num_labels: int = 1, pretrai
     elif name.startswith("resnet"):
         in_features = model.fc.in_features
         model.fc = nn.Sequential(nn.Dropout(dropout), nn.Linear(in_features, num_labels))
+    elif name.startswith("vit_"):
+        # torchvision ViT keeps its classifier in `heads`, an OrderedDict Sequential
+        # whose only entry is `head`. Replacing the whole `heads` module (rather than
+        # `heads.head`) keeps the Dropout/Linear pattern identical to the CNNs above,
+        # and `forward` calls `self.heads(x)` so the swap is transparent.
+        in_features = model.heads.head.in_features
+        model.heads = nn.Sequential(nn.Dropout(dropout), nn.Linear(in_features, num_labels))
     else:  # pragma: no cover - guarded by SUPPORTED_BACKBONES
         raise ValueError(f"No head-replacement rule for {name}")
 
@@ -148,6 +161,116 @@ def unfreeze_backbone(model: nn.Module) -> nn.Module:
     return model
 
 
+def unfreeze_efficientnet_backbone_blocks(model: nn.Module,
+                                          unfreeze_last_n_blocks: int = 2) -> nn.Module:
+    """Selectively unfreeze the last N blocks of a torchvision EfficientNet backbone.
+
+    This is stage 2 of the conservative fine-tuning schedule used by
+    ``run_xray_finetune_efficientnet_b0.py``: stage 1 trains the new head with the
+    whole backbone frozen, then stage 2 additionally re-opens only the deepest
+    backbone blocks. Early blocks keep their ImageNet edge/texture filters, which
+    is what makes fine-tuning viable on a few hundred training images.
+
+    ``model.features`` of ``efficientnet_b0`` is a ``Sequential`` of 9 entries:
+    ``features[0]`` is the stem convolution, ``features[1:8]`` are the MBConv
+    stages, and ``features[8]`` is the final Conv-BN-SiLU. "Last N blocks"
+    therefore means the last N entries of that Sequential, i.e. ``features[7]``
+    and ``features[8]`` for the default ``unfreeze_last_n_blocks=2``.
+
+    The classifier head is left untouched: :func:`build_transfer_model` replaces it
+    *after* freezing, so its parameters are already trainable.
+
+    Note
+    ----
+    Freezing controls gradients only. BatchNorm running statistics in the frozen
+    blocks still update while the model is in ``train()`` mode - this matches the
+    behaviour of the saved runs and is reflected in their checkpoints.
+    """
+    features = getattr(model, "features", None)
+    if features is None or not hasattr(features, "__getitem__") or not hasattr(features, "__len__"):
+        raise ValueError(
+            "unfreeze_efficientnet_backbone_blocks expects a torchvision EfficientNet "
+            f"with a 'features' Sequential; got {type(model).__name__}."
+        )
+
+    n_blocks = len(features)
+    n = int(unfreeze_last_n_blocks)
+    if n < 0:
+        raise ValueError(f"unfreeze_last_n_blocks must be >= 0, got {unfreeze_last_n_blocks}")
+    n = min(n, n_blocks)
+
+    unfrozen_indices = list(range(n_blocks - n, n_blocks)) if n else []
+    for index in unfrozen_indices:
+        for param in features[index].parameters():
+            param.requires_grad = True
+
+    total, trainable = count_parameters(model)
+    pretty = ", ".join(f"features[{i}]" for i in unfrozen_indices) or "none"
+    print(f"[model] efficientnet: unfroze last {n} backbone block(s) -> {pretty} "
+          f"(of {n_blocks}); {trainable:,}/{total:,} parameters now trainable")
+    return model
+
+
+def unfreeze_vit_encoder_blocks(model: nn.Module, unfreeze_last_n_blocks: int = 2,
+                                unfreeze_final_norm: bool = True) -> nn.Module:
+    """Selectively unfreeze the last N transformer blocks of a torchvision ViT.
+
+    Stage 2 of the conservative schedule used by ``scripts/run_xray_finetune_vit.py``,
+    and the direct analogue of :func:`unfreeze_efficientnet_backbone_blocks`: stage 1
+    trains the new 14-output head with the whole backbone frozen, stage 2 additionally
+    re-opens only the deepest encoder blocks. The patch embedding, class token,
+    positional embeddings and the early blocks keep their ImageNet weights, which is
+    what makes fine-tuning an 86M-parameter model viable on a few hundred X-rays.
+
+    ``model.encoder.layers`` is a ``Sequential`` of 12 ``EncoderBlock`` modules for
+    ``vit_b_16``/``vit_b_32``, so "last N blocks" means ``layers[12-N:]``.
+
+    ``unfreeze_final_norm`` also re-opens ``model.encoder.ln``, the LayerNorm applied
+    to the encoder output before the head. It is 2 x hidden_dim parameters and sits
+    directly in front of the newly initialised head, so leaving it frozen would force
+    the head to absorb a shift it cannot represent.
+
+    The classifier head is left untouched: :func:`build_transfer_model` replaces it
+    *after* freezing, so its parameters are already trainable.
+
+    Note
+    ----
+    Freezing controls gradients only. ViT uses LayerNorm, which has no running
+    statistics, so unlike the BatchNorm backbones nothing in the frozen blocks
+    changes during ``train()`` mode.
+    """
+    encoder = getattr(model, "encoder", None)
+    layers = getattr(encoder, "layers", None)
+    if layers is None or not hasattr(layers, "__getitem__") or not hasattr(layers, "__len__"):
+        raise ValueError(
+            "unfreeze_vit_encoder_blocks expects a torchvision VisionTransformer with an "
+            f"'encoder.layers' Sequential; got {type(model).__name__}."
+        )
+
+    n_blocks = len(layers)
+    n = int(unfreeze_last_n_blocks)
+    if n < 0:
+        raise ValueError(f"unfreeze_last_n_blocks must be >= 0, got {unfreeze_last_n_blocks}")
+    n = min(n, n_blocks)
+
+    unfrozen_indices = list(range(n_blocks - n, n_blocks)) if n else []
+    for index in unfrozen_indices:
+        for param in layers[index].parameters():
+            param.requires_grad = True
+
+    if unfreeze_final_norm and hasattr(encoder, "ln"):
+        for param in encoder.ln.parameters():
+            param.requires_grad = True
+
+    total, trainable = count_parameters(model)
+    pretty = ", ".join(f"encoder.layers[{i}]" for i in unfrozen_indices) or "none"
+    if unfreeze_final_norm and hasattr(encoder, "ln"):
+        pretty += " + encoder.ln"
+    print(f"[model] vit: unfroze last {n} encoder block(s) -> {pretty} "
+          f"(of {n_blocks}); {trainable:,}/{total:,} parameters now trainable")
+    return model
+
+
 def count_parameters(model: nn.Module) -> tuple[int, int]:
     """Return ``(total, trainable)`` parameter counts."""
     total = sum(p.numel() for p in model.parameters())
@@ -171,4 +294,12 @@ def get_gradcam_target_layer(model: nn.Module, name: str) -> nn.Module:
         return model.features[-1]           # final Conv-BN-SiLU
     if name.startswith("resnet"):
         return model.layer4[-1]
+    if name.startswith("vit_"):
+        raise ValueError(
+            f"Grad-CAM is not defined for '{name}'. A Vision Transformer has no final "
+            "convolutional feature map: its encoder emits a (B, 1+N_patches, hidden) token "
+            "sequence, so the CNN Grad-CAM hook in src.classification.gradcam does not apply. "
+            "Use an attention-rollout or transformer-specific CAM instead, and do not "
+            "reuse another model's Grad-CAM panel for it."
+        )
     raise ValueError(f"No Grad-CAM target layer defined for model '{name}'")
