@@ -1,0 +1,44 @@
+[
+  {
+    "case_id": "BRATS_410",
+    "slice_index": 89,
+    "dice": 0.9691459355068228,
+    "iou": 0.940138831371157,
+    "file": "predictions/heldout_test/BRATS_410_slice89.npz"
+  },
+  {
+    "case_id": "BRATS_425",
+    "slice_index": 83,
+    "dice": 0.9368529881708447,
+    "iou": 0.8812073755998989,
+    "file": "predictions/heldout_test/BRATS_425_slice83.npz"
+  },
+  {
+    "case_id": "BRATS_171",
+    "slice_index": 49,
+    "dice": 0.916509966152689,
+    "iou": 0.8458868448455398,
+    "file": "predictions/heldout_test/BRATS_171_slice49.npz"
+  },
+  {
+    "case_id": "BRATS_042",
+    "slice_index": 120,
+    "dice": 0.8854605430093885,
+    "iou": 0.7944631636462981,
+    "file": "predictions/heldout_test/BRATS_042_slice120.npz"
+  },
+  {
+    "case_id": "BRATS_188",
+    "slice_index": 105,
+    "dice": 0.8150016539861065,
+    "iou": 0.6877660688115012,
+    "file": "predictions/heldout_test/BRATS_188_slice105.npz"
+  },
+  {
+    "case_id": "BRATS_381",
+    "slice_index": 70,
+    "dice": 0.6123610630360371,
+    "iou": 0.4412971175166297,
+    "file": "predictions/heldout_test/BRATS_381_slice70.npz"
+  }
+]

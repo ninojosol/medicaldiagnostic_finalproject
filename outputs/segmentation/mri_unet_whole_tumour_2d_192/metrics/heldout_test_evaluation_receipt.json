@@ -1,0 +1,11 @@
+{
+  "evaluated_utc": "2026-08-13T08:12:08+00:00",
+  "checkpoint_sha256": "ec4222c0b34087ad67f8b459376efec1529ddd3be57486a1363a0f9c68d7be99",
+  "checkpoint_epoch": 29,
+  "n_cases": 72,
+  "mean_dice": 0.8758314670358889,
+  "mean_iou": 0.7867702069535318,
+  "threshold": 0.5,
+  "run_count": 1,
+  "note": "One-time evaluation. Re-running requires --force-rerun and invalidates the claim."
+}

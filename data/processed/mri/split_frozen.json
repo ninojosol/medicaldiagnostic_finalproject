@@ -1,0 +1,21 @@
+{
+  "frozen_utc": "2026-08-13T05:56:38+00:00",
+  "files": {
+    "data/processed/mri/mri_manifest.csv": {
+      "sha256": "e494ba57061ef2b3df94479bcf0e97eaaf4afa0c303b207293441bae951b7f24",
+      "rows": 484
+    },
+    "data/processed/mri/train_manifest.csv": {
+      "sha256": "cb622ff1817d37cd873d68ac8935f68c94507e9a1ee6c17a6851b63cf44c7f4b",
+      "rows": 339
+    },
+    "data/processed/mri/valid_manifest.csv": {
+      "sha256": "3c0691804d989c666c3a981f0a79ab5d6d09f33895d8a23cdd19ef4d0b407e9f",
+      "rows": 73
+    },
+    "data/processed/mri/test_manifest.csv": {
+      "sha256": "4277018af472a4f9d06908ce9ecff49dfd6a6695b4f5ea37db6f820d7be78a64",
+      "rows": 72
+    }
+  }
+}

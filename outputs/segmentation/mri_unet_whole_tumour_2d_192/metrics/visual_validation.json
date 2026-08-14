@@ -1,0 +1,222 @@
+{
+  "input_size": 192,
+  "n_cases_checked": 8,
+  "n_overlays_rendered": 8,
+  "thresholds": {
+    "max_tumour_on_background_fraction": 0.05,
+    "min_flair_contrast_sd": 0.2
+  },
+  "all_passed": true,
+  "failures": [],
+  "checks": [
+    {
+      "skipped": false,
+      "passed": true,
+      "n_tumour_voxels": 149604,
+      "tumour_on_background_fraction": 0.0,
+      "flair_tumour_mean": 2.046,
+      "flair_brain_mean": -0.2345,
+      "flair_contrast": 2.2805,
+      "tumour_centroid": [
+        154.9,
+        85.0,
+        78.4
+      ],
+      "brain_bbox_min": [
+        55,
+        25,
+        0
+      ],
+      "brain_bbox_max": [
+        185,
+        196,
+        145
+      ],
+      "centroid_inside_brain_bbox": true,
+      "case_id": "BRATS_480"
+    },
+    {
+      "skipped": false,
+      "passed": true,
+      "n_tumour_voxels": 97205,
+      "tumour_on_background_fraction": 0.0,
+      "flair_tumour_mean": 2.304,
+      "flair_brain_mean": -0.1832,
+      "flair_contrast": 2.4872,
+      "tumour_centroid": [
+        145.3,
+        82.6,
+        87.5
+      ],
+      "brain_bbox_min": [
+        54,
+        31,
+        2
+      ],
+      "brain_bbox_max": [
+        188,
+        192,
+        137
+      ],
+      "centroid_inside_brain_bbox": true,
+      "case_id": "BRATS_339"
+    },
+    {
+      "skipped": false,
+      "passed": true,
+      "n_tumour_voxels": 82921,
+      "tumour_on_background_fraction": 0.0,
+      "flair_tumour_mean": 2.3156,
+      "flair_brain_mean": -0.1469,
+      "flair_contrast": 2.4626,
+      "tumour_centroid": [
+        83.3,
+        126.5,
+        88.1
+      ],
+      "brain_bbox_min": [
+        53,
+        29,
+        0
+      ],
+      "brain_bbox_max": [
+        188,
+        192,
+        138
+      ],
+      "centroid_inside_brain_bbox": true,
+      "case_id": "BRATS_415"
+    },
+    {
+      "skipped": false,
+      "passed": true,
+      "n_tumour_voxels": 175675,
+      "tumour_on_background_fraction": 0.0,
+      "flair_tumour_mean": 1.9483,
+      "flair_brain_mean": -0.2449,
+      "flair_contrast": 2.1932,
+      "tumour_centroid": [
+        155.6,
+        123.9,
+        54.9
+      ],
+      "brain_bbox_min": [
+        51,
+        22,
+        0
+      ],
+      "brain_bbox_max": [
+        190,
+        201,
+        138
+      ],
+      "centroid_inside_brain_bbox": true,
+      "case_id": "BRATS_314"
+    },
+    {
+      "skipped": false,
+      "passed": true,
+      "n_tumour_voxels": 266936,
+      "tumour_on_background_fraction": 0.0,
+      "flair_tumour_mean": 1.1848,
+      "flair_brain_mean": -0.292,
+      "flair_contrast": 1.4769,
+      "tumour_centroid": [
+        147.2,
+        120.4,
+        79.5
+      ],
+      "brain_bbox_min": [
+        53,
+        25,
+        11
+      ],
+      "brain_bbox_max": [
+        188,
+        196,
+        140
+      ],
+      "centroid_inside_brain_bbox": true,
+      "case_id": "BRATS_206"
+    },
+    {
+      "skipped": false,
+      "passed": true,
+      "n_tumour_voxels": 66754,
+      "tumour_on_background_fraction": 0.0,
+      "flair_tumour_mean": 1.9212,
+      "flair_brain_mean": -0.0947,
+      "flair_contrast": 2.0158,
+      "tumour_centroid": [
+        77.1,
+        114.7,
+        56.3
+      ],
+      "brain_bbox_min": [
+        53,
+        22,
+        4
+      ],
+      "brain_bbox_max": [
+        190,
+        191,
+        137
+      ],
+      "centroid_inside_brain_bbox": true,
+      "case_id": "BRATS_208"
+    },
+    {
+      "skipped": false,
+      "passed": true,
+      "n_tumour_voxels": 40286,
+      "tumour_on_background_fraction": 0.0,
+      "flair_tumour_mean": 2.5516,
+      "flair_brain_mean": -0.0732,
+      "flair_contrast": 2.6248,
+      "tumour_centroid": [
+        148.9,
+        100.3,
+        101.0
+      ],
+      "brain_bbox_min": [
+        47,
+        29,
+        0
+      ],
+      "brain_bbox_max": [
+        193,
+        193,
+        138
+      ],
+      "centroid_inside_brain_bbox": true,
+      "case_id": "BRATS_044"
+    },
+    {
+      "skipped": false,
+      "passed": true,
+      "n_tumour_voxels": 154279,
+      "tumour_on_background_fraction": 0.0,
+      "flair_tumour_mean": 2.1348,
+      "flair_brain_mean": -0.25,
+      "flair_contrast": 2.3848,
+      "tumour_centroid": [
+        104.8,
+        148.5,
+        95.6
+      ],
+      "brain_bbox_min": [
+        55,
+        24,
+        2
+      ],
+      "brain_bbox_max": [
+        186,
+        198,
+        140
+      ],
+      "centroid_inside_brain_bbox": true,
+      "case_id": "BRATS_365"
+    }
+  ],
+  "figure": "outputs/segmentation/mri_unet_whole_tumour_2d_192/figures/visual_validation_train_overlays.png"
+}

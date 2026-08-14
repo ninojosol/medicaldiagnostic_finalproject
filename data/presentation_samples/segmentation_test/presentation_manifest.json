@@ -1,0 +1,147 @@
+{
+  "generated_utc": "2026-08-13T08:12:51+00:00",
+  "purpose": "Copied-only presentation samples for the Streamlit Segmentation inference demo.",
+  "split": "held-out internal test",
+  "split_note": "Project-created internal held-out test split drawn from the same public Decathlon training archive. It is NOT an external or clinical test set.",
+  "source_dataset": {
+    "id": "decathlon_task01_brain_tumour",
+    "name": "Medical Segmentation Decathlon \u2014 Task01_BrainTumour (BraTS)"
+  },
+  "task": {
+    "target": "binary whole tumour vs background",
+    "rule": "mask = (label > 0)",
+    "source_label_mapping": {
+      "0": "background",
+      "1": "edema",
+      "2": "non-enhancing tumor",
+      "3": "enhancing tumour"
+    }
+  },
+  "modalities": [
+    "FLAIR",
+    "T1w",
+    "T1gd",
+    "T2w"
+  ],
+  "copy_policy": "Files copied with shutil.copyfile from data/raw/mri/decathlon_task01_brain_tumour/. Originals were not moved, renamed or modified.",
+  "selection_rule": "evenly spaced ranks across the split's per-case Dice distribution",
+  "n_cases": 4,
+  "cases": [
+    {
+      "case_id": "BRATS_410",
+      "split": "held-out internal test",
+      "split_role": "held-out internal test \u2014 one-time generalization check",
+      "rank_in_split": 1,
+      "selection_rule": "evenly spaced rank across the split's Dice distribution",
+      "image_file": "BRATS_410.nii.gz",
+      "label_file": "label_BRATS_410.nii.gz",
+      "source_image_path": "data/raw/mri/decathlon_task01_brain_tumour/imagesTr/BRATS_410.nii.gz",
+      "source_label_path": "data/raw/mri/decathlon_task01_brain_tumour/labelsTr/BRATS_410.nii.gz",
+      "case_dice": 0.9691459355068228,
+      "case_iou": 0.940138831371157,
+      "gt_tumour_voxels": 98779,
+      "pred_tumour_voxels": 97986,
+      "n_slices": 155,
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "modalities": [
+        "FLAIR",
+        "T1w",
+        "T1gd",
+        "T2w"
+      ],
+      "image_bytes": 10350727,
+      "label_bytes": 33063
+    },
+    {
+      "case_id": "BRATS_378",
+      "split": "held-out internal test",
+      "split_role": "held-out internal test \u2014 one-time generalization check",
+      "rank_in_split": 2,
+      "selection_rule": "evenly spaced rank across the split's Dice distribution",
+      "image_file": "BRATS_378.nii.gz",
+      "label_file": "label_BRATS_378.nii.gz",
+      "source_image_path": "data/raw/mri/decathlon_task01_brain_tumour/imagesTr/BRATS_378.nii.gz",
+      "source_label_path": "data/raw/mri/decathlon_task01_brain_tumour/labelsTr/BRATS_378.nii.gz",
+      "case_dice": 0.922319896798904,
+      "case_iou": 0.8558382901004516,
+      "gt_tumour_voxels": 36554,
+      "pred_tumour_voxels": 38639,
+      "n_slices": 155,
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "modalities": [
+        "FLAIR",
+        "T1w",
+        "T1gd",
+        "T2w"
+      ],
+      "image_bytes": 10639886,
+      "label_bytes": 24822
+    },
+    {
+      "case_id": "BRATS_041",
+      "split": "held-out internal test",
+      "split_role": "held-out internal test \u2014 one-time generalization check",
+      "rank_in_split": 3,
+      "selection_rule": "evenly spaced rank across the split's Dice distribution",
+      "image_file": "BRATS_041.nii.gz",
+      "label_file": "label_BRATS_041.nii.gz",
+      "source_image_path": "data/raw/mri/decathlon_task01_brain_tumour/imagesTr/BRATS_041.nii.gz",
+      "source_label_path": "data/raw/mri/decathlon_task01_brain_tumour/labelsTr/BRATS_041.nii.gz",
+      "case_dice": 0.8682170542635659,
+      "case_iou": 0.7671232876712328,
+      "gt_tumour_voxels": 98825,
+      "pred_tumour_voxels": 91708,
+      "n_slices": 155,
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "modalities": [
+        "FLAIR",
+        "T1w",
+        "T1gd",
+        "T2w"
+      ],
+      "image_bytes": 9550083,
+      "label_bytes": 40600
+    },
+    {
+      "case_id": "BRATS_381",
+      "split": "held-out internal test",
+      "split_role": "held-out internal test \u2014 one-time generalization check",
+      "rank_in_split": 4,
+      "selection_rule": "evenly spaced rank across the split's Dice distribution",
+      "image_file": "BRATS_381.nii.gz",
+      "label_file": "label_BRATS_381.nii.gz",
+      "source_image_path": "data/raw/mri/decathlon_task01_brain_tumour/imagesTr/BRATS_381.nii.gz",
+      "source_label_path": "data/raw/mri/decathlon_task01_brain_tumour/labelsTr/BRATS_381.nii.gz",
+      "case_dice": 0.6123610630360371,
+      "case_iou": 0.4412971175166297,
+      "gt_tumour_voxels": 17019,
+      "pred_tumour_voxels": 8982,
+      "n_slices": 155,
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "modalities": [
+        "FLAIR",
+        "T1w",
+        "T1gd",
+        "T2w"
+      ],
+      "image_bytes": 11075063,
+      "label_bytes": 14557
+    }
+  ]
+}

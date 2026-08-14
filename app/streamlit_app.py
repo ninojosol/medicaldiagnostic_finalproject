@@ -317,15 +317,21 @@ def _load_frozen_xray_model_bundle(spec: dict[str, Any]) -> dict[str, Any]:
     run_meta_path: Path = spec["run_meta"]
     display_name = str(spec["display_name"])
 
+    asset_hint = (
+        "Install the presentation asset bundle (see docs/TEAM_SETUP.md), then restart the app."
+    )
     if not checkpoint.is_file():
-        raise FileNotFoundError(f"Missing {display_name} checkpoint: {checkpoint}")
+        raise FileNotFoundError(
+            f"Missing {display_name} checkpoint: {checkpoint}. {asset_hint}"
+        )
     if not run_meta_path.is_file():
         raise FileNotFoundError(
-            f"Missing {display_name} run metadata / preprocessing config: {run_meta_path}"
+            f"Missing {display_name} run metadata / preprocessing config: "
+            f"{run_meta_path}. {asset_hint}"
         )
     if not thresholds_path.is_file():
         raise FileNotFoundError(
-            f"Missing {display_name} validation thresholds: {thresholds_path}"
+            f"Missing {display_name} validation thresholds: {thresholds_path}. {asset_hint}"
         )
 
     meta = _read_json_file(run_meta_path)
@@ -501,6 +507,37 @@ def _render_mri_audit_status_panel(*, stage_label: str) -> None:
         </div>
         """,
         unsafe_allow_html=True,
+    )
+
+
+def _seg_ui_call(func_name: str, *, fallback_stage: str) -> None:
+    """Dispatch into app/segmentation_ui.py (MRI workstream only).
+
+    Segmentation rendering lives in its own module so the Classification code in
+    this file is not touched by it. If the module or its dependencies are
+    unavailable, the honest audit panel is shown instead of a broken tab.
+    """
+    try:
+        import app.segmentation_ui as seg_ui
+    except Exception:  # noqa: BLE001
+        try:
+            import segmentation_ui as seg_ui  # running with app/ on sys.path
+        except Exception as exc:  # noqa: BLE001
+            _render_mri_audit_status_panel(stage_label=fallback_stage)
+            st.caption(f"Segmentation UI module unavailable: {exc}")
+            return
+    try:
+        getattr(seg_ui, func_name)()
+    except Exception as exc:  # noqa: BLE001
+        _render_mri_audit_status_panel(stage_label=fallback_stage)
+        st.error(f"Segmentation panel error: {type(exc).__name__}: {exc}")
+
+
+def _render_segmentation_data_prep() -> None:
+    """MRI segmentation Data Preparation — real dataset, split and preprocessing."""
+    _seg_ui_call(
+        "render_segmentation_data_prep",
+        fallback_stage="MRI preparation manifests, patient-safe splits, and preprocessing flow",
     )
 
 
@@ -1080,9 +1117,7 @@ def render_data_preparation() -> None:
 
     with tab_segmentation:
         _render_workstream_context("segmentation")
-        _render_mri_audit_status_panel(
-            stage_label="MRI preparation manifests, mask pairing, and patient-safe splits"
-        )
+        _render_segmentation_data_prep()
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -2083,9 +2118,10 @@ def _render_classification_train_validate() -> None:
 
 
 def _render_segmentation_train_validate() -> None:
-    """MRI segmentation Train & Validate — accurate audit/in-progress state only."""
-    _render_mri_audit_status_panel(
-        stage_label="Validation training curves, Dice/IoU summaries, and threshold selection"
+    """MRI segmentation Train & Validate — six numbered panes from real artifacts."""
+    _seg_ui_call(
+        "render_segmentation_train_validate",
+        fallback_stage="Validation training curves, Dice/IoU summaries, and qualitative examples",
     )
 
 
@@ -3009,7 +3045,8 @@ def _render_xray_inference_demo() -> None:
     elif not any_available:
         st.error(
             "No classification checkpoints are available. "
-            "Verify Baseline CNN, DenseNet, EfficientNet-B0, and ViT-B/16 artifacts."
+            "Download release `v1.0-presentation-demo` (or the shared asset bundle) and run "
+            "`scripts/install_presentation_assets.ps1`. See docs/TEAM_SETUP.md."
         )
         for spec in XRAY_COMPARISON_MODEL_SPECS:
             bundle = (model_bundles or {}).get(str(spec["key"])) or {}
@@ -3122,9 +3159,10 @@ def _render_xray_inference_demo() -> None:
 
 
 def render_mri_inference_tab() -> None:
-    """MRI segmentation inference — accurate unavailable/audit state only."""
-    _render_mri_audit_status_panel(
-        stage_label="MRI volume upload, mask overlay inference, and demo controls"
+    """MRI segmentation inference — presentation samples and NIfTI upload."""
+    _seg_ui_call(
+        "render_segmentation_inference",
+        fallback_stage="MRI slice selection, predicted tumour mask overlay, and demo controls",
     )
 
 

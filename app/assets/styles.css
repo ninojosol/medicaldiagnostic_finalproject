@@ -2783,3 +2783,273 @@ div[data-testid="stArrowVegaLiteChart"] canvas {
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================================================================
+   SEGMENTATION WORKSTREAM (MRI whole tumour) — appended block.
+   Every selector below is scoped to .cxr-seg-* / .st-key-*_seg_pane_* so it
+   cannot affect any Classification pane. Nothing above this line was changed.
+   ========================================================================= */
+
+/* White panes for the Segmentation Train & Validate / Data Prep containers,
+   matching the Classification pane treatment. */
+.st-key-tv_seg_pane_01,
+.st-key-tv_seg_pane_02,
+.st-key-tv_seg_pane_03,
+.st-key-tv_seg_pane_04,
+.st-key-tv_seg_pane_05,
+.st-key-tv_seg_pane_06,
+.st-key-dp_seg_pane_01,
+.st-key-dp_seg_pane_02,
+.st-key-dp_seg_pane_03,
+.st-key-dp_seg_pane_04 {
+  background: #ffffff;
+  border-color: var(--border) !important;
+  border-radius: var(--radius) !important;
+  margin-bottom: 0.85rem;
+}
+
+.cxr-seg-metric-grid {
+  margin: 0.35rem 0 0.75rem;
+}
+
+.cxr-seg-metric {
+  background: #ffffff;
+  border-color: var(--border);
+}
+
+/* Scope banner: which split a block of numbers belongs to. Validation and
+   held-out test never share a colour. */
+.cxr-seg-scope {
+  margin: 0 0 0.6rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+}
+
+.cxr-seg-scope--val {
+  color: #1d5c5d;
+  background: var(--teal-soft);
+  border-color: var(--teal-border);
+}
+
+.cxr-seg-scope--test {
+  color: #7c4a03;
+  background: #fdf4e6;
+  border-color: #eccfa0;
+}
+
+.cxr-seg-divider {
+  height: 1px;
+  margin: 1rem 0 0.9rem;
+  background: var(--border);
+}
+
+/* Held-out internal test card — visually separated from validation metrics. */
+.cxr-seg-testcard {
+  border: 1px solid #eccfa0;
+  border-left: 4px solid #d98b1f;
+  background: #fffaf2;
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem 0.7rem;
+}
+
+.cxr-seg-testcard__row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.cxr-seg-testcard__note {
+  margin: 0.7rem 0 0;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: #7c4a03;
+}
+
+.cxr-seg-note {
+  margin: 0.6rem 0 0.15rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.cxr-seg-note--info {
+  padding: 0.5rem 0.7rem;
+  background: var(--surface-muted);
+  border-radius: var(--radius-sm);
+  color: #37506b;
+}
+
+.cxr-seg-note--warn {
+  padding: 0.5rem 0.7rem;
+  background: #fdf4e6;
+  border: 1px solid #eccfa0;
+  border-radius: var(--radius-sm);
+  color: #7c4a03;
+}
+
+.cxr-seg-note--muted {
+  color: var(--text-muted);
+}
+
+.cxr-seg-note code {
+  background: #e7eef4;
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+  font-size: 0.94em;
+}
+
+/* Verification lines (zero patient overlap, mask alignment). */
+.cxr-seg-check {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  margin: 0.7rem 0 0.1rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.79rem;
+  line-height: 1.5;
+}
+
+.cxr-seg-check--ok {
+  background: #eefaf4;
+  border: 1px solid #b6e3cd;
+  color: #14532d;
+}
+
+.cxr-seg-check--bad {
+  background: #fdecec;
+  border: 1px solid #f0b4b4;
+  color: #7f1d1d;
+}
+
+.cxr-seg-check__mark {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  margin-top: 0.16rem;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.75;
+}
+
+/* Mask colour legend. */
+.cxr-seg-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 0.5rem 0 0.35rem;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.cxr-seg-legend i {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  margin-right: 0.35rem;
+  border-radius: 2px;
+  vertical-align: -1px;
+}
+
+.cxr-seg-samplecap {
+  margin: 0.35rem 0 0;
+  font-size: 0.78rem;
+  color: #37506b;
+}
+
+/* Keep the per-case expander label and table headers dark and readable. */
+.cxr-seg-table-wrap ~ div [data-testid="stExpander"] summary,
+.st-key-tv_seg_pane_04 [data-testid="stExpander"] summary {
+  color: var(--navy) !important;
+  font-weight: 700;
+}
+
+.st-key-tv_seg_pane_04 [data-testid="stExpander"] summary p {
+  color: var(--navy) !important;
+  font-weight: 700;
+}
+
+.st-key-tv_seg_pane_04 [data-testid="stDataFrame"] thead th,
+.st-key-tv_seg_pane_04 [data-testid="stDataFrame"] [role="columnheader"] {
+  color: var(--navy) !important;
+  font-weight: 700 !important;
+  background: var(--surface-muted) !important;
+}
+
+.st-key-tv_seg_pane_04 [data-testid="stDataFrame"] [role="gridcell"] {
+  color: #22364d !important;
+}
+
+/* Inference model identity bar. */
+.cxr-seg-modelbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.7rem;
+  margin: 0 0 0.85rem;
+  padding: 0.55rem 0.8rem;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.76rem;
+}
+
+.cxr-seg-modelbar__k {
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+}
+
+.cxr-seg-modelbar__v {
+  color: var(--navy);
+  font-weight: 650;
+  margin-right: 0.6rem;
+}
+
+/* Ground-truth availability card in the inference demo. */
+.cxr-seg-gtcard {
+  margin: 0.8rem 0 0.2rem;
+  padding: 0.75rem 0.9rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.cxr-seg-gtcard--val {
+  background: var(--teal-soft);
+  border-color: var(--teal-border);
+}
+
+.cxr-seg-gtcard--test {
+  background: #fffaf2;
+  border-color: #eccfa0;
+}
+
+.cxr-seg-gtcard--none {
+  background: var(--surface-muted);
+}
+
+.cxr-seg-gtcard__title {
+  margin: 0 0 0.5rem;
+  font-size: 0.84rem;
+  font-weight: 750;
+  color: var(--navy);
+}
+
+.cxr-seg-gtcard__body {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+  .cxr-seg-testcard__row {
+    grid-template-columns: 1fr;
+  }
+}

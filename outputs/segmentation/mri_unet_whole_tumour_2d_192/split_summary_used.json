@@ -1,0 +1,123 @@
+{
+  "generated_utc": "2026-08-13T05:56:38+00:00",
+  "source": {
+    "dataset_id": "decathlon_task01_brain_tumour",
+    "dataset_name": "Medical Segmentation Decathlon \u2014 Task01_BrainTumour (BraTS)",
+    "download_url": "https://msd-for-monai.s3-us-west-2.amazonaws.com/Task01_BrainTumour.tar",
+    "download_date": "2026-08-13",
+    "licence": "CC BY-SA 4.0 (Medical Segmentation Decathlon)"
+  },
+  "task": {
+    "target": "binary whole tumour vs background",
+    "rule": "mask = (label > 0)",
+    "source_label_mapping": {
+      "0": "background",
+      "1": "edema",
+      "2": "non-enhancing tumor",
+      "3": "enhancing tumour"
+    },
+    "tumour_source_labels": [
+      1,
+      2,
+      3
+    ],
+    "input_modalities": [
+      "FLAIR",
+      "T1w",
+      "T1gd",
+      "T2w"
+    ],
+    "slice_axis": 2,
+    "slice_axis_name": "axial (index axis 2 of the 240x240x155 volume)"
+  },
+  "split_policy": {
+    "unit": "patient/case \u2014 never slices or patches",
+    "seed": 42,
+    "target_fractions": {
+      "train": 0.7,
+      "valid": 0.15,
+      "test": 0.15
+    },
+    "stratified_on": "whole-tumour burden quartile",
+    "held_out_test_note": "Project-created internal held-out test split drawn from the same public Decathlon training archive. It is NOT an external or clinical test set.",
+    "test_split_protected": true,
+    "test_used_for_selection": false,
+    "test_used_for_tuning": false,
+    "test_used_for_early_stopping": false,
+    "test_used_for_threshold_selection": false
+  },
+  "totals": {
+    "cases": 484,
+    "total_slices": 75020,
+    "tumour_slices": 33755
+  },
+  "splits": {
+    "train": {
+      "cases": 339,
+      "percent_of_cases": 70.04,
+      "total_slices": 52545,
+      "tumour_slices": 23647,
+      "mean_tumour_fraction": 0.011534028042101479,
+      "cases_without_tumour": 0
+    },
+    "valid": {
+      "cases": 73,
+      "percent_of_cases": 15.08,
+      "total_slices": 11315,
+      "tumour_slices": 5216,
+      "mean_tumour_fraction": 0.012708385501055628,
+      "cases_without_tumour": 0
+    },
+    "test": {
+      "cases": 72,
+      "percent_of_cases": 14.88,
+      "total_slices": 11160,
+      "tumour_slices": 4892,
+      "mean_tumour_fraction": 0.010587172690163281,
+      "cases_without_tumour": 0
+    }
+  },
+  "leakage_check": {
+    "train_valid_overlap": [],
+    "train_test_overlap": [],
+    "valid_test_overlap": [],
+    "zero_patient_overlap": true
+  },
+  "inventory": {
+    "n_matched_pairs": 484,
+    "n_images_without_label": 0,
+    "n_labels_without_image": 0,
+    "n_ok": 484,
+    "n_failed": 0,
+    "image_shape_histogram": {
+      "(240, 240, 155, 4)": 484
+    },
+    "observed_label_values": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  "frozen": {
+    "frozen_utc": "2026-08-13T05:56:38+00:00",
+    "files": {
+      "data/processed/mri/mri_manifest.csv": {
+        "sha256": "e494ba57061ef2b3df94479bcf0e97eaaf4afa0c303b207293441bae951b7f24",
+        "rows": 484
+      },
+      "data/processed/mri/train_manifest.csv": {
+        "sha256": "cb622ff1817d37cd873d68ac8935f68c94507e9a1ee6c17a6851b63cf44c7f4b",
+        "rows": 339
+      },
+      "data/processed/mri/valid_manifest.csv": {
+        "sha256": "3c0691804d989c666c3a981f0a79ab5d6d09f33895d8a23cdd19ef4d0b407e9f",
+        "rows": 73
+      },
+      "data/processed/mri/test_manifest.csv": {
+        "sha256": "4277018af472a4f9d06908ce9ecff49dfd6a6695b4f5ea37db6f820d7be78a64",
+        "rows": 72
+      }
+    }
+  }
+}

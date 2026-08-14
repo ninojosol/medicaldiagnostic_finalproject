@@ -1,0 +1,147 @@
+{
+  "generated_utc": "2026-08-13T08:12:51+00:00",
+  "purpose": "Copied-only presentation samples for the Streamlit Segmentation inference demo.",
+  "split": "validation",
+  "split_note": "Validation split \u2014 these cases selected the checkpoint.",
+  "source_dataset": {
+    "id": "decathlon_task01_brain_tumour",
+    "name": "Medical Segmentation Decathlon \u2014 Task01_BrainTumour (BraTS)"
+  },
+  "task": {
+    "target": "binary whole tumour vs background",
+    "rule": "mask = (label > 0)",
+    "source_label_mapping": {
+      "0": "background",
+      "1": "edema",
+      "2": "non-enhancing tumor",
+      "3": "enhancing tumour"
+    }
+  },
+  "modalities": [
+    "FLAIR",
+    "T1w",
+    "T1gd",
+    "T2w"
+  ],
+  "copy_policy": "Files copied with shutil.copyfile from data/raw/mri/decathlon_task01_brain_tumour/. Originals were not moved, renamed or modified.",
+  "selection_rule": "evenly spaced ranks across the split's per-case Dice distribution",
+  "n_cases": 4,
+  "cases": [
+    {
+      "case_id": "BRATS_172",
+      "split": "validation",
+      "split_role": "validation \u2014 used for model selection",
+      "rank_in_split": 1,
+      "selection_rule": "evenly spaced rank across the split's Dice distribution",
+      "image_file": "BRATS_172.nii.gz",
+      "label_file": "label_BRATS_172.nii.gz",
+      "source_image_path": "data/raw/mri/decathlon_task01_brain_tumour/imagesTr/BRATS_172.nii.gz",
+      "source_label_path": "data/raw/mri/decathlon_task01_brain_tumour/labelsTr/BRATS_172.nii.gz",
+      "case_dice": 0.967806885321656,
+      "case_iou": 0.9376219154719394,
+      "gt_tumour_voxels": 92010,
+      "pred_tumour_voxels": 89768,
+      "n_slices": 155,
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "modalities": [
+        "FLAIR",
+        "T1w",
+        "T1gd",
+        "T2w"
+      ],
+      "image_bytes": 8622413,
+      "label_bytes": 30485
+    },
+    {
+      "case_id": "BRATS_279",
+      "split": "validation",
+      "split_role": "validation \u2014 used for model selection",
+      "rank_in_split": 2,
+      "selection_rule": "evenly spaced rank across the split's Dice distribution",
+      "image_file": "BRATS_279.nii.gz",
+      "label_file": "label_BRATS_279.nii.gz",
+      "source_image_path": "data/raw/mri/decathlon_task01_brain_tumour/imagesTr/BRATS_279.nii.gz",
+      "source_label_path": "data/raw/mri/decathlon_task01_brain_tumour/labelsTr/BRATS_279.nii.gz",
+      "case_dice": 0.9377992806916616,
+      "case_iou": 0.8828833041106565,
+      "gt_tumour_voxels": 120031,
+      "pred_tumour_voxels": 121590,
+      "n_slices": 155,
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "modalities": [
+        "FLAIR",
+        "T1w",
+        "T1gd",
+        "T2w"
+      ],
+      "image_bytes": 11556187,
+      "label_bytes": 39990
+    },
+    {
+      "case_id": "BRATS_301",
+      "split": "validation",
+      "split_role": "validation \u2014 used for model selection",
+      "rank_in_split": 3,
+      "selection_rule": "evenly spaced rank across the split's Dice distribution",
+      "image_file": "BRATS_301.nii.gz",
+      "label_file": "label_BRATS_301.nii.gz",
+      "source_image_path": "data/raw/mri/decathlon_task01_brain_tumour/imagesTr/BRATS_301.nii.gz",
+      "source_label_path": "data/raw/mri/decathlon_task01_brain_tumour/labelsTr/BRATS_301.nii.gz",
+      "case_dice": 0.8961487482965258,
+      "case_iou": 0.8118383223406055,
+      "gt_tumour_voxels": 25480,
+      "pred_tumour_voxels": 28087,
+      "n_slices": 155,
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "modalities": [
+        "FLAIR",
+        "T1w",
+        "T1gd",
+        "T2w"
+      ],
+      "image_bytes": 9212350,
+      "label_bytes": 19333
+    },
+    {
+      "case_id": "BRATS_342",
+      "split": "validation",
+      "split_role": "validation \u2014 used for model selection",
+      "rank_in_split": 4,
+      "selection_rule": "evenly spaced rank across the split's Dice distribution",
+      "image_file": "BRATS_342.nii.gz",
+      "label_file": "label_BRATS_342.nii.gz",
+      "source_image_path": "data/raw/mri/decathlon_task01_brain_tumour/imagesTr/BRATS_342.nii.gz",
+      "source_label_path": "data/raw/mri/decathlon_task01_brain_tumour/labelsTr/BRATS_342.nii.gz",
+      "case_dice": 0.6267214127393627,
+      "case_iou": 0.4563687357781658,
+      "gt_tumour_voxels": 18640,
+      "pred_tumour_voxels": 8881,
+      "n_slices": 155,
+      "shape": [
+        240,
+        240,
+        155
+      ],
+      "modalities": [
+        "FLAIR",
+        "T1w",
+        "T1gd",
+        "T2w"
+      ],
+      "image_bytes": 10465759,
+      "label_bytes": 19860
+    }
+  ]
+}

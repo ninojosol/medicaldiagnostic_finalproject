@@ -1,0 +1,58 @@
+[
+  {
+    "case_id": "BRATS_172",
+    "slice_index": 90,
+    "dice": 0.967806885321656,
+    "iou": 0.9376219154719394,
+    "file": "predictions/validation/BRATS_172_slice90.npz"
+  },
+  {
+    "case_id": "BRATS_447",
+    "slice_index": 64,
+    "dice": 0.9530760902388545,
+    "iou": 0.9103585096803242,
+    "file": "predictions/validation/BRATS_447_slice64.npz"
+  },
+  {
+    "case_id": "BRATS_115",
+    "slice_index": 57,
+    "dice": 0.9396400899775056,
+    "iou": 0.8861520329994107,
+    "file": "predictions/validation/BRATS_115_slice57.npz"
+  },
+  {
+    "case_id": "BRATS_058",
+    "slice_index": 90,
+    "dice": 0.9269603795275335,
+    "iou": 0.8638640753259295,
+    "file": "predictions/validation/BRATS_058_slice90.npz"
+  },
+  {
+    "case_id": "BRATS_070",
+    "slice_index": 87,
+    "dice": 0.909200150206534,
+    "iou": 0.8335169374827871,
+    "file": "predictions/validation/BRATS_070_slice87.npz"
+  },
+  {
+    "case_id": "BRATS_250",
+    "slice_index": 79,
+    "dice": 0.8911673705368234,
+    "iou": 0.8036987249989817,
+    "file": "predictions/validation/BRATS_250_slice79.npz"
+  },
+  {
+    "case_id": "BRATS_218",
+    "slice_index": 87,
+    "dice": 0.8426584615384616,
+    "iou": 0.7280983474062573,
+    "file": "predictions/validation/BRATS_218_slice87.npz"
+  },
+  {
+    "case_id": "BRATS_342",
+    "slice_index": 51,
+    "dice": 0.6267214127393627,
+    "iou": 0.45636873577816583,
+    "file": "predictions/validation/BRATS_342_slice51.npz"
+  }
+]

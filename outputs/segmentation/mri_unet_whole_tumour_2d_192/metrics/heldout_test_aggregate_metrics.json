@@ -1,0 +1,82 @@
+{
+  "n_cases": 72,
+  "n_cases_with_tumour": 72,
+  "n_cases_without_tumour": 0,
+  "dice": {
+    "mean": 0.8758314670358889,
+    "std": 0.07688592210778701,
+    "median": 0.9006139483955873,
+    "p25": 0.8424643729107848,
+    "p75": 0.9320532425757807,
+    "min": 0.6123610630360371,
+    "max": 0.9691459355068228
+  },
+  "iou": {
+    "mean": 0.7867702069535318,
+    "std": 0.11266421496812529,
+    "median": 0.8191977019727343,
+    "p25": 0.7278259508841093,
+    "p75": 0.8727527344640997,
+    "min": 0.4412971175166297,
+    "max": 0.940138831371157
+  },
+  "dice_cases_with_tumour": {
+    "mean": 0.8758314670358889,
+    "std": 0.07688592210778701,
+    "median": 0.9006139483955873,
+    "p25": 0.8424643729107848,
+    "p75": 0.9320532425757807,
+    "min": 0.6123610630360371,
+    "max": 0.9691459355068228
+  },
+  "iou_cases_with_tumour": {
+    "mean": 0.7867702069535318,
+    "std": 0.11266421496812529,
+    "median": 0.8191977019727343,
+    "p25": 0.7278259508841093,
+    "p75": 0.8727527344640997,
+    "min": 0.4412971175166297,
+    "max": 0.940138831371157
+  },
+  "micro": {
+    "dice": 0.896467875744515,
+    "iou": 0.8123622829279492,
+    "precision": 0.8961058444333471,
+    "recall": 0.8968301996988882,
+    "tp": 3906465,
+    "fp": 452914,
+    "fn": 449393,
+    "tn": 406593468
+  },
+  "mean_dice": 0.8758314670358889,
+  "mean_iou": 0.7867702069535318,
+  "dice_bootstrap_ci": {
+    "mean": 0.8758314670358889,
+    "lo": 0.8578459964395261,
+    "hi": 0.8922020396777838,
+    "n_boot": 2000,
+    "alpha": 0.05
+  },
+  "iou_bootstrap_ci": {
+    "mean": 0.7867702069535318,
+    "lo": 0.7606273887070472,
+    "hi": 0.8113124025477272,
+    "n_boot": 2000,
+    "alpha": 0.05
+  },
+  "split": "held_out_internal_test",
+  "purpose": "one-time generalization check AFTER the checkpoint was frozen",
+  "threshold": 0.5,
+  "threshold_tuned_on_test": false,
+  "used_for_model_selection": false,
+  "checkpoint": "models/mri_unet_whole_tumour_2d_192_best.pt",
+  "checkpoint_epoch": 29,
+  "checkpoint_sha256": "ec4222c0b34087ad67f8b459376efec1529ddd3be57486a1363a0f9c68d7be99",
+  "evaluated_utc": "2026-08-13T08:12:08+00:00",
+  "note": "Project-created internal held-out test split drawn from the same public Decathlon training archive. It is NOT an external or clinical test set.",
+  "not_clinical_validation": "Not clinical validation, not external validation, not evidence of diagnostic readiness.",
+  "validation_comparison": {
+    "validation_mean_dice": 0.8964981529840789,
+    "validation_mean_iou": 0.8189711518126794
+  }
+}

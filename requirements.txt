@@ -34,6 +34,8 @@ scipy>=1.11
 Pillow>=10.2
 opencv-python>=4.9          # optional; used for fast image ops, not required
 scikit-image>=0.22          # optional; handy for mask post-processing
+nibabel>=5.2                # REQUIRED for the MRI segmentation workstream:
+                            # reads the Decathlon Task01 .nii.gz volumes directly
 
 # --- metrics ---------------------------------------------------------------
 scikit-learn>=1.4
@@ -47,6 +49,9 @@ altair>=5.0
 # --- configuration & utilities ---------------------------------------------
 PyYAML>=6.0
 tqdm>=4.66
+
+# --- Streamlit presentation app --------------------------------------------
+streamlit>=1.37
 
 # --- notebooks -------------------------------------------------------------
 jupyterlab>=4.1

@@ -38,6 +38,11 @@ data/processed/**
 !data/raw/**/.gitkeep
 !data/processed/**/.gitkeep
 
+# Lightweight MRI manifests/summaries needed by the Streamlit Data Prep panels.
+# Never re-include slice_cache or raw volumes.
+!data/processed/mri/*.json
+!data/processed/mri/*.csv
+
 # Scratch data stages - no placeholders needed, so a plain directory rule is fine.
 data/interim/
 data/external/
@@ -93,6 +98,20 @@ Thumbs.db
 # --- logs ------------------------------------------------------------------
 *.log
 
+# --- secrets / local env ---------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# --- presentation asset staging (built locally; distributed via Release) ---
+presentation-assets/
+presentation-assets-*.zip
+dist/presentation-assets*/
+
+# --- MRI presentation volumes stay local / Release-only (*.nii.gz already) -
+# Manifests for those folders are small JSON and may be committed.
+!data/presentation_samples/**/presentation_manifest.json
+
 # --- TensorFlow / Keras baseline artefacts (large or regenerable) -----------
 # Keep report-worthy classification/segmentation notebooks outputs elsewhere
 # tracked via the older !outputs/**/metrics|figures rules when applicable;
@@ -100,3 +119,6 @@ Thumbs.db
 outputs/models/
 outputs/metrics/
 outputs/figures/
+
+# MRI slice cache is regenerable and large — never commit.
+data/processed/mri/slice_cache/

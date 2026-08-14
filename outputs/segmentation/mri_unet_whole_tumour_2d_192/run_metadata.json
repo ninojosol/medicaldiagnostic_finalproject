@@ -1,0 +1,143 @@
+{
+  "run_name": "mri_unet_whole_tumour_2d_192",
+  "completed_utc": "2026-08-13T08:04:47+00:00",
+  "git_head": "0348bb13d2e8ca6c2391dd17afa4139916a26db0",
+  "task": {
+    "name": "binary whole-tumour MRI segmentation",
+    "target": "whole tumour vs background",
+    "binary_rule": "mask = (label > 0)",
+    "source_label_mapping": {
+      "0": "background",
+      "1": "edema",
+      "2": "non-enhancing tumor",
+      "3": "enhancing tumour"
+    },
+    "not_multiclass_subregion": true
+  },
+  "dataset": {
+    "id": "decathlon_task01_brain_tumour",
+    "name": "Medical Segmentation Decathlon \u2014 Task01_BrainTumour (BraTS)",
+    "url": "https://msd-for-monai.s3-us-west-2.amazonaws.com/Task01_BrainTumour.tar",
+    "licence": "CC BY-SA 4.0 (Medical Segmentation Decathlon)",
+    "modalities": [
+      "FLAIR",
+      "T1w",
+      "T1gd",
+      "T2w"
+    ],
+    "slice_axis": "axial (index axis 2 of the 240x240x155 volume)",
+    "train_cases": 339,
+    "valid_cases": 73,
+    "test_cases": 72,
+    "train_slices": 31843,
+    "valid_slices": 11315,
+    "train_tumour_slices": 23585,
+    "train_empty_slices": 8258,
+    "slice_retention_policy": "all tumour slices + 0.35x deterministic empty brain slices",
+    "held_out_test_note": "Project-created internal held-out test split drawn from the same public Decathlon training archive. It is NOT an external or clinical test set."
+  },
+  "model": {
+    "label": "2D slice-wise U-Net using four MRI sequences",
+    "architecture_note": "Slice-wise 2D U-Net \u2014 4 input channels (one per MRI sequence), 1 binary output channel (whole tumour). This is not a 3D U-Net.",
+    "name": "mri_unet_2d",
+    "in_channels": 4,
+    "out_channels": 1,
+    "features": [
+      32,
+      64,
+      128,
+      256
+    ],
+    "parameters": 7763329,
+    "output": "logits (sigmoid applied only for metrics/inference)"
+  },
+  "preprocessing": {
+    "input_size": 192,
+    "slice_axis": 2,
+    "normalization": "nonzero_zscore_per_modality",
+    "image_interpolation": "bilinear",
+    "mask_interpolation": "nearest",
+    "binary_rule": "label > 0",
+    "modalities": [
+      "FLAIR",
+      "T1w",
+      "T1gd",
+      "T2w"
+    ],
+    "in_channels": 4,
+    "out_channels": 1
+  },
+  "training": {
+    "epochs_configured": 30,
+    "epochs_completed": 30,
+    "best_epoch": 29,
+    "best_validation_micro_dice_in_training": 0.9173657897158012,
+    "batch_size": 24,
+    "optimizer": "AdamW",
+    "lr": 0.0003,
+    "weight_decay": 1e-05,
+    "scheduler": "ReduceLROnPlateau(mode=max, factor=0.50, patience=3)",
+    "early_stopping_patience": 7,
+    "selection_metric": "validation micro Dice (validation split only)",
+    "loss": "L = 0.5 * BCEWithLogits + 0.5 * (1 - SoftDice), Dice smoothing eps=1.0, per-sample Dice averaged over batch",
+    "amp": true,
+    "grad_clip": 1.0,
+    "seed": 42,
+    "deterministic": true,
+    "num_workers": 4,
+    "training_seconds": 5018.6,
+    "training_minutes": 83.64,
+    "augmentation": "hflip p=0.5; integer shift +/-6.25%; brain-masked intensity jitter p=0.5"
+  },
+  "hardware": {
+    "device": "cuda",
+    "gpu": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+    "total_vram_gb": 12.82,
+    "cpu": "Intel64 Family 6 Model 204 Stepping 2, GenuineIntel",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "torch": "2.11.0+cu128",
+    "cuda": "12.8",
+    "gpu_smoke_test": {
+      "input_size": 192,
+      "batch_size": 24,
+      "amp": true,
+      "ok": true,
+      "step_seconds": 0.0994,
+      "slices_per_second": 241.5,
+      "peak_allocated_gb": 1.476,
+      "peak_reserved_gb": 1.9
+    }
+  },
+  "evaluation": {
+    "threshold": 0.5,
+    "threshold_tuned": false,
+    "metric_definition": "per-case volumetric Dice/IoU \u2014 confusion counts accumulated over every slice of a case, then Dice computed once from the case totals",
+    "validation": {
+      "n_cases": 73,
+      "mean_dice": 0.8964981529840789,
+      "mean_iou": 0.8189711518126794,
+      "micro_dice": 0.9173668306742878,
+      "micro_iou": 0.8473477967109063,
+      "purpose": "model selection"
+    },
+    "held_out_test": "not run by this script \u2014 see scripts/mri_eval_heldout_test.py"
+  },
+  "protected_test_split": {
+    "read_during_training": false,
+    "used_for_architecture_choice": false,
+    "used_for_hyperparameter_tuning": false,
+    "used_for_early_stopping": false,
+    "used_for_threshold_selection": false
+  },
+  "artifacts": {
+    "best_checkpoint": "models/mri_unet_whole_tumour_2d_192_best.pt",
+    "last_checkpoint": "models/mri_unet_whole_tumour_2d_192_last.pt",
+    "training_history": "metrics/training_history.csv",
+    "validation_per_case": "metrics/validation_per_case_metrics.csv",
+    "validation_aggregate": "metrics/validation_aggregate_metrics.json",
+    "validation_overlays": "figures/validation_qualitative_examples.png",
+    "training_history_figure": "figures/training_history.png",
+    "config_used": "config_used.yaml",
+    "split_summary": "split_summary_used.json"
+  }
+}
