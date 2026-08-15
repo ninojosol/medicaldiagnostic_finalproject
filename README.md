@@ -21,6 +21,7 @@ cd medicaldiagnostic_finalproject
 ```
 
 Full guide (datasets, troubleshooting, CUDA/CPU): **[`docs/TEAM_SETUP.md`](docs/TEAM_SETUP.md)**  
+Presentation flow, roles, Q&A, and safe claims: **[`docs/PRESENTATION_GUIDE.md`](docs/PRESENTATION_GUIDE.md)**  
 Asset layout / shared-folder fallback: **[`TEAM_ASSETS.md`](TEAM_ASSETS.md)**  
 Release tag: **`v1.0-presentation-demo`**
 
